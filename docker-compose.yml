@@ -7,20 +7,21 @@ services:
   deepalpha:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.brale
     container_name: deepalpha
     restart: unless-stopped
+    user: "1000:1000"  # 非 root 用户
     ports:
       - "9991:9991"
     environment:
-      - BRALE_CONFIG=/app/configs/config.toml
-      - BRALE_DATA_ROOT=/data
+      - BRALE_CONFIG=/home/brale/deepalpha/configs/config.toml
+      - BRALE_DATA_ROOT=/home/brale/deepalpha/running_log
       - FREQTRADE_API_URL=http://freqtrade:8080/api/v1
-      - PYTHONPATH=/app
+      - PYTHONPATH=/home/brale/deepalpha
     volumes:
-      - ./data:/data
-      - ./configs:/app/configs
-      - ./logs:/data/logs
+      - ./running_log:/home/brale/deepalpha/running_log
+      - ./configs:/home/brale/deepalpha/configs
+      - ./logs:/home/brale/deepalpha/running_log/logs
     networks:
       - deepalpha-net
     depends_on:
@@ -36,6 +37,7 @@ services:
     image: freqtradeorg/freqtrade:stable
     container_name: freqtrade
     restart: unless-stopped
+    user: "1000:1000"  # 非 root 用户
     ports:
       - "8080:8080"
     environment:
@@ -43,15 +45,16 @@ services:
       - FREQTRADE__CONFIG__user_data_dir: /freqtrade/user_data
       - PYTHONPATH=/freqtrade
     volumes:
-      - ./freqtrade/user_data:/freqtrade/user_data
-      - ./freqtrade/config:/freqtrade/user_data/configs
-      - ./data:/data
+      - ./running_log/freqtrade_user_data:/freqtrade/user_data
+      - ./configs/user_data/freqtrade-config.example.json:/freqtrade/user_data/config.json
+      - ./running_log:/freqtrade
+      - ./logs:/freqtrade/logs
     networks:
       - deepalpha-net
     command: >
       trade
-      --config /freqtrade/user_data/configs/config.json
-      --strategy DeepAlphaStrategy
+      --config /freqtrade/user_data/config.json
+      --strategy BraleSharedStrategy
       --user-data-dir /freqtrade/user_data
 
 networks:

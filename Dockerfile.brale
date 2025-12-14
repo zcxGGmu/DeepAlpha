@@ -1,0 +1,65 @@
+# Dockerfile for DeepAlpha (Python版 Brale)
+# 对应 Go 版本的 Dockerfile.brale
+
+# Python 基础镜像
+FROM python:3.11-slim
+
+# 设置环境变量
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# 安装系统依赖
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    curl \
+    gnupg \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建应用用户
+RUN useradd --create-home --shell /bin/bash brale
+USER brale
+WORKDIR /home/brale
+
+# 创建虚拟环境
+RUN python3 -m venv venv
+ENV PATH="/home/brale/venv/bin:$PATH"
+
+# 复制并安装 Python 依赖
+COPY --chown=brale:brale requirements/ /home/brale/requirements/
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements/prod.txt
+
+# 复制应用代码
+COPY --chown=brale:brale . /home/brale/deepalpha
+
+# 设置工作目录
+WORKDIR /home/brale/deepalpha
+
+# 创建必要的目录
+RUN mkdir -p running_log/db running_log/logs running_log/freqtrade_user_data
+
+# 复制配置文件
+COPY --chown=brale:brale configs/ /home/brale/deepalpha/configs/
+RUN mkdir -p /home/brale/deepalpha/running_log/freqtrade_user_data
+COPY --chown=brale:brale configs/user_data/freqtrade-config.example.json \
+    /home/brale/deepalpha/running_log/freqtrade_user_data/config.json
+
+# 安装 Freqtrade（可选）
+RUN pip install freqtrade[all]
+
+# 暴露端口
+EXPOSE 9991
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:9991/api/live/status || exit 1
+
+# 启动命令
+CMD ["python", "run.py"]

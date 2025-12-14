@@ -1,7 +1,7 @@
-# Makefile for DeepAlpha
+# Makefile for DeepAlpha (Python版 Brale)
 # 对应 Go 版本的 Makefile
 
-.PHONY: help test test-unit test-integration test-performance test-all test-quick clean install lint format
+.PHONY: help build run clean test install prepare-dirs start stop up down logs status docker-build docker-up docker-down
 
 # 默认目标
 help:
