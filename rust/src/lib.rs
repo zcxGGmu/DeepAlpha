@@ -26,5 +26,9 @@ fn deepalpha_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     websocket::init_websocket_module(websocket_module)?;
     m.add_submodule(websocket_module)?;
 
+    let stream_module = PyModule::new(_py, "stream")?;
+    stream::init_stream_module(stream_module)?;
+    m.add_submodule(stream_module)?;
+
     Ok(())
 }

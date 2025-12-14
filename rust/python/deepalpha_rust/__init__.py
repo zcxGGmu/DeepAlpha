@@ -21,8 +21,10 @@ try:
         MessageType
     )
 
-    # Stream and execution modules (placeholders)
-    from ._core import MarketDataStream
+    # Stream module
+    from ._core.stream import MarketDataStream, StreamStats
+
+    # Execution module (placeholder)
     from ._core import ExecutionEngine
 except ImportError:
     # Fallback when Rust module is not compiled
@@ -42,5 +44,6 @@ __all__ = [
     "CandlestickData",
     "MessageType",
     "MarketDataStream",
+    "StreamStats",
     "ExecutionEngine",
 ]
