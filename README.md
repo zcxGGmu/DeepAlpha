@@ -158,45 +158,289 @@ docker-compose up -d
 
 ## 📖 系统架构
 
+### 整体架构概览
+
 ```mermaid
 graph TB
-    A[市场数据源] --> B[数据收集层]
-    B --> C[Rust数据流处理]
-    C --> D[技术分析引擎]
-    D --> E[多智能体系统]
-    E --> F[AI决策引擎]
-    F --> G[Rust执行引擎]
-    G --> H[交易所API]
-
-    I[配置管理] --> E
-    J[Rust风险管理] --> F
-    J --> G
-    K[监控系统] --> E
-    K --> F
-    K --> G
-    K --> H
-
-    subgraph "Rust性能模块"
-        C1[WebSocket管理器]
-        C2[数据流处理器]
-        G1[订单管理]
-        G2[风险检查]
-        G3[仓位管理]
+    %% 外部数据源
+    subgraph "External Data Sources"
+        B1[Binance API]
+        B2[Other Exchanges]
+        B3[News Feeds]
+        B4[Sentiment APIs]
     end
 
-    subgraph "智能体系统"
-        E1[Technical Agent]
-        E2[Pattern Agent]
-        E3[Trend Agent]
-        E4[Risk Agent]
+    %% 数据收集层
+    subgraph "Data Collection"
+        C1[WebSocket Connectors]
+        C2[REST API Pollers]
+        C3[News Aggregator]
     end
 
-    subgraph "AI决策引擎"
-        F1[LLM集成]
-        F2[决策聚合]
-        F3[权重管理]
+    %% Rust高性能层
+    subgraph "Rust Performance Layer"
+        D1[WebSocket Manager<br/>10K+ Connections<br/><1ms Latency]
+        D2[Stream Processor<br/>100K+ Points/sec]
+        D3[Technical Indicators<br/>50K+ Candles/sec]
+        D4[Execution Engine<br/>1K+ Orders/sec<br/><50μs Latency]
     end
+
+    %% 存储层
+    subgraph "Storage Layer"
+        E1[(PostgreSQL<br/>Time Series Data)]
+        E2[(Redis<br/>Cache & Session)]
+        E3[(InfluxDB<br/>Market Data)]
+    end
+
+    %% Python业务逻辑层
+    subgraph "Python Business Logic"
+        subgraph "Multi-Agent System"
+            F1[Technical Agent<br/>TA Analysis]
+            F2[Pattern Agent<br/>30+ Patterns]
+            F3[Trend Agent<br/>Multi-Timeframe]
+            F4[Risk Agent<br/>Risk Assessment]
+            F5[News Agent<br/>Sentiment Analysis]
+        end
+
+        subgraph "Decision Engine"
+            G1[Decision Aggregator<br/>Weighted Voting]
+            G2[LLM Integration<br/>Multiple Providers]
+            G3[Decision Cache<br/>Redis-backed]
+        end
+    end
+
+    %% 执行层
+    subgraph "Execution Layer"
+        I1[Order Manager]
+        I2[Position Manager]
+        I3[Risk Manager]
+    end
+
+    %% 网关层
+    subgraph "Gateway Layer"
+        J1[Exchange Gateway]
+        J2[Notification Gateway]
+        J3[API Gateway]
+    end
+
+    %% 接口层
+    subgraph "Interface Layer"
+        K1[REST API<br/>FastAPI]
+        K2[WebSocket Server]
+        K3[Web Dashboard]
+    end
+
+    %% 数据流
+    B1 --> C1
+    B2 --> C2
+    B3 --> C3
+    C1 --> D1
+    C2 --> D2
+    C3 --> D2
+    D1 --> E2
+    D2 --> D3
+    D3 --> E2
+    E1 --> F1
+    E2 --> F2
+    E3 --> F3
+    F1 --> G1
+    F2 --> G1
+    F3 --> G1
+    F4 --> G1
+    F5 --> G1
+    G2 --> G1
+    G1 --> I1
+    I1 --> D4
+    D4 --> J1
+    I1 --> I2
+    I1 --> I3
+    K1 --> J3
+    K2 --> K3
+
+    classDef rust fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef python fill:#4dabf7,stroke:#1864ab,color:#fff
+    classDef storage fill:#69db7c,stroke:#2f9e44,color:#fff
+    classDef external fill:#ffd43b,stroke:#fab005,color:#000
+
+    class D1,D2,D3,D4 rust
+    class F1,F2,F3,F4,F5,G1,G2,G3 python
+    class E1,E2,E3 storage
+    class B1,B2,B3,B4 external
 ```
+
+### 核心组件详解
+
+#### 🚀 Rust性能优化层
+
+1. **WebSocket管理器** (`rust/src/websocket/`)
+   - 支持10,000+并发连接
+   - 消息延迟 < 1ms
+   - 自动重连和心跳机制
+   - JWT认证和权限控制
+
+2. **数据流处理器** (`rust/src/stream/`)
+   - 100,000+数据点/秒处理能力
+   - 零拷贝环形缓冲区
+   - 实时数据验证和清洗
+   - 异步批处理优化
+
+3. **技术指标引擎** (`rust/src/indicators/`)
+   - 50+种技术指标支持
+   - SIMD指令集优化
+   - 50,000+K线/秒计算速度
+   - 支持批量计算
+
+4. **交易执行引擎** (`rust/src/executor/`)
+   - 超低延迟：平均50μs
+   - 1,000+订单/秒吞吐量
+   - 实时风险控制
+   - 仓位和组合管理
+
+#### 🤖 Python智能体系统
+
+1. **Technical Agent**
+   - 专业技术指标分析
+   - 多时间框架支持
+   - 指标信号聚合
+
+2. **Pattern Agent**
+   - 30+K线形态识别
+   - 支撑阻力位分析
+   - 形态强度评估
+
+3. **Trend Agent**
+   - 多时间框架趋势分析
+   - 趋势一致性检查
+   - 趋势反转预测
+
+4. **Risk Agent**
+   - 实时风险评估
+   - VaR计算
+   - 对冲建议
+
+5. **News Agent**
+   - 实时新闻分析
+   - 情感评分
+   - 事件影响评估
+
+### 详细架构文档
+
+完整的系统架构说明请参考：[System Architecture](./docs/system-architecture.md)
+
+该文档包含：
+- 详细的组件说明
+- 数据流分析
+- 性能优化策略
+- 部署架构指南
+
+## 🚀 部署架构
+
+### 生产环境架构
+
+```mermaid
+graph TB
+    subgraph "Load Balancer"
+        LB[Nginx/HAProxy]
+    end
+
+    subgraph "Kubernetes Cluster"
+        subgraph "Application Pods"
+            API1[DeepAlpha API Pod 1]
+            API2[DeepAlpha API Pod 2]
+            API3[DeepAlpha API Pod 3]
+            EX1[Executor Pod 1<br/>Rust Engine]
+            EX2[Executor Pod 2<br/>Rust Engine]
+            WS1[WebSocket Pod<br/>10K Connections]
+        end
+    end
+
+    subgraph "Data Layer"
+        PG[(PostgreSQL Cluster)]
+        RD[(Redis Cluster)]
+        ID[(InfluxDB)]
+        S3[(S3 Storage)]
+    end
+
+    subgraph "Monitoring"
+        PROM[Prometheus]
+        GRAF[Grafana]
+        JAE[Jaeger]
+    end
+
+    LB --> API1
+    LB --> API2
+    LB --> API3
+    API1 --> PG
+    API2 --> PG
+    API3 --> PG
+    API1 --> RD
+    API2 --> RD
+    API3 --> RD
+    EX1 --> PG
+    EX2 --> PG
+    WS1 --> RD
+    PROM --> API1
+    PROM --> API2
+    PROM --> API3
+    GRAF --> PROM
+```
+
+### 部署选项
+
+#### Docker Compose（快速开始）
+
+```bash
+# 克隆项目
+git clone https://github.com/zcxGGmu/DeepAlpha.git
+cd DeepAlpha
+
+# 启动所有服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f deepalpha
+```
+
+#### Kubernetes（生产环境）
+
+```bash
+# 创建命名空间
+kubectl create namespace deepalpha
+
+# 部署应用
+kubectl apply -f k8s/
+
+# 检查部署状态
+kubectl get pods -n deepalpha
+```
+
+### 监控和可观测性
+
+- **Prometheus**: 指标收集
+- **Grafana**: 可视化仪表板
+- **Jaeger**: 分布式链路追踪
+- **ELK Stack**: 日志聚合分析
+
+访问监控面板：
+- Grafana: `http://your-domain:3000`
+- Prometheus: `http://your-domain:9090`
+- Jaeger: `http://your-domain:16686`
+
+### 详细部署文档
+
+完整的部署指南请参考：[Deployment Architecture](./docs/deployment-architecture.md)
+
+包含内容：
+- 生产环境部署架构
+- Kubernetes配置清单
+- Docker Compose配置
+- 监控配置
+- 性能调优建议
+- 安全配置
+- 灾难恢复方案
 
 ## 💡 使用示例
 
