@@ -12,8 +12,8 @@ import argparse
 import subprocess
 from typing import Optional
 
-from deepalpha.config.settings import settings
-from deepalpha.utils.logging import setup_logging, get_logger
+from deepalpha.config import config
+from deepalpha.utils.logging import get_logger, setup_logging
 
 logger = get_logger(__name__)
 
