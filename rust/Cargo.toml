@@ -1,0 +1,38 @@
+[package]
+name = "deepalpha-rust"
+version = "0.1.0"
+edition = "2021"
+description = "Rust performance modules for DeepAlpha"
+license = "MIT"
+authors = ["DeepAlpha Team <team@deepalpha.ai>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "deepalpha_rust"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Python bindings
+pyo3 = { version = "0.20", features = ["extension-module"] }
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-tungstenite = { version = "0.20", features = ["native-tls"] }
+
+# Data processing
+rayon = "1.8"
+ndarray = "0.15"
+numpy = "0.20"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Utilities
+tracing = "0.1"
+tracing-subscriber = "0.3"
+num-traits = "0.2"
+ordered-float = "4.1"
+thiserror = "1.0"
+anyhow = "1.0"
