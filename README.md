@@ -1,10 +1,12 @@
 # DeepAlpha - AI驱动的多智能体量化交易系统
+# 基于Brale项目的Python重构版本
 
-[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![DeepAlpha](https://img.shields.io/badge/DeepAlpha-v1.0.0-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.10+-green.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-DeepAlpha 是一个基于 Python 的高性能量化交易系统，采用多智能体架构和 AI 决策引擎，专注于加密货币市场的自动化交易。系统通过多个专业智能体协同工作，结合大语言模型的决策能力，实现智能化的交易策略执行。
+DeepAlpha是一个基于原Brale项目重构的Python量化交易系统，采用多智能体架构，通过AI模型进行交易决策，集成Freqtrade作为执行引擎。
 
 ## 🌟 核心特性
 

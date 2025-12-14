@@ -1,28 +1,30 @@
 #!/usr/bin/env python3
-"""DeepAlpha 主入口"""
+"""DeepAlpha主程序入口"""
 
 import asyncio
+import os
 import sys
-from pathlib import Path
+from contextlib import asynccontextmanager
 
-# 添加项目根目录到Python路径
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
+import uvicorn
+from fastapi import FastAPI
 import typer
 from typing import Optional
 
-from deepalpha.config.loader import ConfigLoader
-from deepalpha.config.settings import settings
-from deepalpha.utils.logging import setup_logging, get_logger
+# 添加项目根目录到路径
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-app = typer.Typer(
+from deepalpha.config import config
+from deepalpha.monitoring import setup_logging, metrics, health_checker
+from deepalpha.transport.http.server import HTTPServer
+from deepalpha.utils.logging import get_logger
+
+logger = get_logger(__name__)
+app_cli = typer.Typer(
     name="deepalpha",
     help="DeepAlpha - AI驱动的多智能体量化交易系统",
     no_args_is_help=True,
 )
-
-logger = get_logger(__name__)
 
 
 @app.command()

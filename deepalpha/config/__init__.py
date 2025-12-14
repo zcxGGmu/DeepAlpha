@@ -1,5 +1,22 @@
 """配置管理模块"""
 
-from deepalpha.config.settings import Settings
+from .manager import ConfigManager, config
+from .models import (
+    AppConfig,
+    AIConfig,
+    MarketConfig,
+    FreqtradeConfig,
+    TradingConfig,
+    NotificationConfig
+)
 
-__all__ = ["Settings"]
+__all__ = [
+    "ConfigManager",
+    "config",
+    "AppConfig",
+    "AIConfig",
+    "MarketConfig",
+    "FreqtradeConfig",
+    "TradingConfig",
+    "NotificationConfig"
+]

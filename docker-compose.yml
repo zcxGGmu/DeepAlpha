@@ -1,0 +1,63 @@
+version: '3.8'
+
+# DeepAlpha docker-compose配置
+# 对应 Go 版本的 docker-compose.yml
+
+services:
+  deepalpha:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: deepalpha
+    restart: unless-stopped
+    ports:
+      - "9991:9991"
+    environment:
+      - BRALE_CONFIG=/app/configs/config.toml
+      - BRALE_DATA_ROOT=/data
+      - FREQTRADE_API_URL=http://freqtrade:8080/api/v1
+      - PYTHONPATH=/app
+    volumes:
+      - ./data:/data
+      - ./configs:/app/configs
+      - ./logs:/data/logs
+    networks:
+      - deepalpha-net
+    depends_on:
+      - freqtrade
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9991/api/live/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  freqtrade:
+    image: freqtradeorg/freqtrade:stable
+    container_name: freqtrade
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - FREQTRADE__CONFIG__config_file: /freqtrade/user_data/config.json
+      - FREQTRADE__CONFIG__user_data_dir: /freqtrade/user_data
+      - PYTHONPATH=/freqtrade
+    volumes:
+      - ./freqtrade/user_data:/freqtrade/user_data
+      - ./freqtrade/config:/freqtrade/user_data/configs
+      - ./data:/data
+    networks:
+      - deepalpha-net
+    command: >
+      trade
+      --config /freqtrade/user_data/configs/config.json
+      --strategy DeepAlphaStrategy
+      --user-data-dir /freqtrade/user_data
+
+networks:
+  deepalpha-net:
+    driver: bridge
+
+volumes:
+  deepalpha_data:
+    driver: local

@@ -1,0 +1,185 @@
+# DeepAlpha配置文件
+# 对应 Go 版本的 configs/config.toml
+
+[app]
+# 服务器配置
+http_addr = ":9991"
+log_level = "info"
+
+# 目录配置
+data_root = "/data"
+log_dir = "/data/logs"
+db_path = "/data/db/deepalpha.db"
+
+# 其他配置
+debug = false
+timezone = "UTC"
+
+[ai]
+# 决策间隔
+decision_interval = "5m"
+analysis_interval = "1m"
+
+# 决策参数
+confidence_threshold = 70
+max_decisions_per_hour = 20
+
+# LLM配置
+llm_retry_count = 3
+llm_retry_delay = 1
+
+# AI模型配置
+[[ai.models]]
+name = "gpt-4"
+provider = "openai"
+model = "gpt-4"
+api_key = ""  # 从环境变量获取
+max_tokens = 4096
+temperature = 0.7
+timeout = 30
+
+[[ai.models]]
+name = "claude-3"
+provider = "anthropic"
+model = "claude-3-sonnet-20240229"
+api_key = ""  # 从环境变量获取
+max_tokens = 4096
+temperature = 0.7
+timeout = 30
+
+[market]
+# 交易对
+symbols = [
+    "BTC/USDT",
+    "ETH/USDT",
+    "BNB/USDT",
+    "ADA/USDT",
+    "SOL/USDT"
+]
+
+# 数据配置
+data_retention_days = 30
+candle_intervals = ["1m", "5m", "15m", "1h", "4h", "1d"]
+
+# 交易所配置
+[[market.exchanges]]
+name = "binance"
+api_key = ""  # 从环境变量获取
+api_secret = ""  # 从环境变量获取
+sandbox = false
+rate_limit = 1200
+
+[freqtrade]
+# API配置
+api_url = "http://freqtrade:8080/api/v1"
+api_key = ""
+username = ""
+password = ""
+
+# Webhook配置
+webhook_url = "http://deepalpha:9991/api/live/freqtrade/webhook"
+webhook_secret = ""
+
+# 交易配置
+enabled = true
+dry_run = false
+stake_currency = "USDT"
+stake_amount = 100
+
+# 交易对
+trading_pairs = [
+    "BTC/USDT",
+    "ETH/USDT",
+    "BNB/USDT"
+]
+
+[trading]
+# 基础配置
+enabled = true
+horizon = "24h"
+
+# 策略参数
+min_confidence = 70
+position_sizing_method = "fixed"
+default_leverage = 1
+
+# 交易时间
+[trading.trading_hours]
+monday = { start = "00:00", end = "23:59" }
+tuesday = { start = "00:00", end = "23:59" }
+wednesday = { start = "00:00", end = "23:59" }
+thursday = { start = "00:00", end = "23:59" }
+friday = { start = "00:00", end = "23:59" }
+saturday = { start = "00:00", end = "23:59" }
+sunday = { start = "00:00", end = "23:59" }
+
+# 风险管理
+[trading.risk]
+# 仓位限制
+max_position_size = 0.02
+max_total_position = 0.5
+
+# 止损止盈
+stop_loss = 0.02
+take_profit = 0.06
+min_profit_ratio = 1.5
+
+# 风险限制
+max_drawdown = 0.10
+max_trades_per_day = 10
+max_leverage = 3
+
+[notification]
+# Telegram配置
+[notification.telegram]
+enabled = false
+bot_token = ""  # 从环境变量获取
+chat_id = ""  # 从环境变量获取
+parse_mode = "HTML"
+notify_on_entry = true
+notify_on_exit = true
+notify_on_error = true
+notify_on_decision = false
+
+# 邮件配置
+notification.email_enabled = false
+notification.email_smtp_host = ""
+notification.email_smtp_port = 587
+notification.email_username = ""
+notification.email_password = ""
+notification.email_from = ""
+notification.email_to = []
+
+# Webhook配置
+notification.webhook_enabled = false
+notification.webhook_url = ""
+
+[database]
+# 数据库配置
+type = "sqlite"
+sqlite_path = "/data/db/deepalpha.db"
+
+# 连接池配置
+pool_size = 10
+max_overflow = 20
+pool_timeout = 30
+
+# 其他配置
+echo = false
+pool_pre_ping = true
+
+[monitoring]
+# 指标配置
+metrics_enabled = true
+metrics_port = 9090
+
+# 健康检查
+health_check_interval = 30
+
+# 性能监控
+performance_monitoring = true
+slow_query_threshold = 1.0
+
+# 告警配置
+alert_enabled = true
+alert_webhook = ""
