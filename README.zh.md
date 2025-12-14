@@ -1,5 +1,8 @@
 # DeepAlpha - 大模型驱动的多智能体量化交易系统
 
+[![English](https://img.shields.io/badge/English-🇺🇸-blue.svg)](README.md)
+[![中文](https://img.shields.io/badge/中文-🇨🇳-red.svg)](README.zh.md)
+
 ![DeepAlpha](https://img.shields.io/badge/DeepAlpha-v1.0.0-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.10+-green.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)
