@@ -22,5 +22,9 @@ fn deepalpha_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     indicators::init_indicators_module(indicators_module)?;
     m.add_submodule(indicators_module)?;
 
+    let websocket_module = PyModule::new(_py, "websocket")?;
+    websocket::init_websocket_module(websocket_module)?;
+    m.add_submodule(websocket_module)?;
+
     Ok(())
 }

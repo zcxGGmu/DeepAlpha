@@ -36,3 +36,9 @@ num-traits = "0.2"
 ordered-float = "4.1"
 thiserror = "1.0"
 anyhow = "1.0"
+
+# Additional utilities
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+jsonwebtoken = "9.2"
+futures-util = "0.3"
