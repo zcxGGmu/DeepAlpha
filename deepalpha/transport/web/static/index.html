@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepAlpha - 交易系统</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="/static/css/admin.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div id="app">
+        <!-- 导航栏 -->
+        <nav class="bg-blue-600 text-white shadow-lg">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <h1 class="text-xl font-bold">DeepAlpha</h1>
+                        <span class="text-sm bg-blue-500 px-2 py-1 rounded" v-if="wsConnected">已连接</span>
+                        <span class="text-sm bg-red-500 px-2 py-1 rounded" v-else>未连接</span>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <router-link to="/desk" class="hover:text-blue-200">工作台</router-link>
+                        <router-link to="/decisions" class="hover:text-blue-200">蓝皮书</router-link>
+                        <router-link to="/positions" class="hover:text-blue-200">红皮书</router-link>
+                        <router-link to="/monitoring" class="hover:text-blue-200">监控</router-link>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="container mx-auto px-6 py-8">
+            <!-- 通知区域 -->
+            <div class="fixed top-20 right-6 z-50 space-y-2" style="max-width: 400px;">
+                <div v-for="notification in notifications" :key="notification.id"
+                     :class="`p-4 rounded-lg shadow-lg transform transition-all duration-300 ${getNotificationClass(notification.level)}`">
+                    <div class="flex items-start">
+                        <div class="flex-1">
+                            <h4 class="font-semibold">{{ notification.title }}</h4>
+                            <p class="text-sm mt-1">{{ notification.message }}</p>
+                        </div>
+                        <button @click="removeNotification(notification.id)" class="ml-4 text-xl hover:opacity-70">&times;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 路由视图 -->
+            <router-view></router-view>
+        </main>
+    </div>
+
+    <script type="module">
+        // 路由定义
+        const routes = [
+            { path: '/', redirect: '/desk' },
+            { path: '/desk', component: DeskView },
+            { path: '/decisions', component: DecisionsView },
+            { path: '/decisions/:id', component: DecisionDetailView },
+            { path: '/positions', component: PositionsView },
+            { path: '/positions/:symbol', component: PositionDetailView },
+            { path: '/monitoring', component: MonitoringView },
+        ]
+
+        // 路由器
+        const router = VueRouter.createRouter({
+            history: VueRouter.createWebHistory(),
+            routes
+        })
+
+        // 根应用
+        const app = Vue.createApp({
+            data() {
+                return {
+                    ws: null,
+                    wsConnected: false,
+                    notifications: [],
+                    wsClientId: this.generateClientId()
+                }
+            },
+            methods: {
+                generateClientId() {
+                    return 'client_' + Math.random().toString(36).substr(2, 9)
+                },
+                initWebSocket() {
+                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+                    const wsUrl = `${protocol}//${window.location.host}/ws/${this.wsClientId}`
+
+                    this.ws = new WebSocket(wsUrl)
+
+                    this.ws.onopen = () => {
+                        this.wsConnected = true
+                        console.log('WebSocket连接已建立')
+
+                        // 订阅默认主题
+                        this.ws.send(JSON.stringify({
+                            type: 'subscribe',
+                            topic: 'notifications'
+                        }))
+                        this.ws.send(JSON.stringify({
+                            type: 'subscribe',
+                            topic: 'positions'
+                        }))
+                    }
+
+                    this.ws.onclose = () => {
+                        this.wsConnected = false
+                        console.log('WebSocket连接已断开')
+                        // 5秒后重连
+                        setTimeout(() => this.initWebSocket(), 5000)
+                    }
+
+                    this.ws.onmessage = (event) => {
+                        const message = JSON.parse(event.data)
+                        this.handleWebSocketMessage(message)
+                    }
+
+                    this.ws.onerror = (error) => {
+                        console.error('WebSocket错误:', error)
+                    }
+                },
+                handleWebSocketMessage(message) {
+                    switch (message.type) {
+                        case 'notification':
+                            this.addNotification(message.data)
+                            break
+                        case 'position_update':
+                            // 触发事件更新持仓视图
+                            this.$root.$emit('position-update', message.data)
+                            break
+                        case 'subscribed':
+                            console.log('已订阅主题:', message.topic)
+                            break
+                        case 'pong':
+                            // 心跳响应
+                            break
+                    }
+                },
+                addNotification(data) {
+                    const notification = {
+                        id: Date.now(),
+                        ...data
+                    }
+                    this.notifications.unshift(notification)
+
+                    // 限制通知数量
+                    if (this.notifications.length > 10) {
+                        this.notifications.pop()
+                    }
+
+                    // 自动移除通知（5秒后）
+                    setTimeout(() => {
+                        this.removeNotification(notification.id)
+                    }, 5000)
+                },
+                removeNotification(id) {
+                    const index = this.notifications.findIndex(n => n.id === id)
+                    if (index > -1) {
+                        this.notifications.splice(index, 1)
+                    }
+                },
+                getNotificationClass(level) {
+                    const classes = {
+                        'info': 'bg-blue-500 text-white',
+                        'success': 'bg-green-500 text-white',
+                        'warning': 'bg-yellow-500 text-white',
+                        'error': 'bg-red-500 text-white'
+                    }
+                    return classes[level] || 'bg-gray-500 text-white'
+                },
+                formatNumber(num, decimals = 2) {
+                    if (num === null || num === undefined) return '-'
+                    return parseFloat(num).toFixed(decimals)
+                },
+                formatPercent(num) {
+                    if (num === null || num === undefined) return '-'
+                    return (parseFloat(num) * 100).toFixed(2) + '%'
+                },
+                formatTime(timestamp) {
+                    if (!timestamp) return '-'
+                    const date = new Date(timestamp)
+                    return date.toLocaleString('zh-CN')
+                }
+            },
+            mounted() {
+                this.initWebSocket()
+
+                // 定期发送心跳
+                setInterval(() => {
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(JSON.stringify({
+                            type: 'ping',
+                            timestamp: new Date().toISOString()
+                        }))
+                    }
+                }, 30000)
+            },
+            beforeDestroy() {
+                if (this.ws) {
+                    this.ws.close()
+                }
+            }
+        })
+
+        // 注册组件
+        app.component('router-link', VueRouter.RouterLink)
+        app.component('router-view', VueRouter.RouterView)
+
+        // 使用路由器
+        app.use(router)
+
+        // 挂载应用
+        app.mount('#app')
+    </script>
+
+    <!-- Vue组件 -->
+    <script src="/static/js/components.js"></script>
+</body>
+</html>
