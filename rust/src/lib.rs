@@ -30,5 +30,12 @@ fn deepalpha_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     stream::init_stream_module(stream_module)?;
     m.add_submodule(stream_module)?;
 
+    let executor_module = PyModule::new(_py, "executor")?;
+    executor::init_executor_module(executor_module)?;
+    m.add_submodule(executor_module)?;
+
+    // Add ExecutionEngine to main module for convenience
+    m.add_class::<executor::ExecutionEngine>()?;
+
     Ok(())
 }
