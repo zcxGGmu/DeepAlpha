@@ -1,0 +1,56 @@
+{
+  "proxy": {
+    "enabled": false,
+    "http": {
+      "url": "http://proxy.example.com:8080",
+      "username": "",
+      "password": ""
+    },
+    "https": {
+      "url": "http://proxy.example.com:8080",
+      "username": "",
+      "password": ""
+    },
+    "no_proxy": [
+      "localhost",
+      "127.0.0.1",
+      "192.168.*",
+      "10.*",
+      "*.local"
+    ],
+    "timeout": 30,
+    "verify_ssl": true
+  },
+  "exchange": {
+    "use_proxy": false,
+    "proxy_config": {
+      "http": null,
+      "https": null
+    }
+  },
+  "api": {
+    "use_proxy": false,
+    "proxy_timeout": 10
+  },
+  "webhook": {
+    "use_proxy": false,
+    "proxy_headers": {
+      "X-Forwarded-For": "",
+      "X-Real-IP": ""
+    }
+  },
+  "llm_providers": {
+    "openai": {
+      "use_proxy": false,
+      "proxy_url": null
+    },
+    "anthropic": {
+      "use_proxy": false,
+      "proxy_url": null
+    },
+    "deepseek": {
+      "use_proxy": false,
+      "proxy_url": null
+    }
+  }
+}
