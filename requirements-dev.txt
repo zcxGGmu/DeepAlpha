@@ -1,0 +1,45 @@
+# 开发依赖
+
+# 测试框架
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# 代码质量
+flake8==6.1.0
+mypy==1.8.0
+black==23.12.1
+isort==5.13.2
+
+# 性能分析
+memory-profiler==0.61.0
+line-profiler==4.1.1
+
+# 安全检查
+bandit==1.7.5
+safety==2.3.5
+
+# 文档生成
+sphinx==7.2.6
+sphinx-rtd-theme==2.0.0
+
+# 类型生成
+types-requests==2.31.0.20240125
+
+# 调试工具
+ipython==8.19.0
+ipdb==0.13.13
+
+# 性能测试
+locust==2.17.0
+
+# 版本管理
+bump2version==1.0.1
+
+# 打包
+build==1.0.3
+twine==4.0.2
+
+# Git hooks
+pre-commit==3.6.0
