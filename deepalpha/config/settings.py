@@ -72,12 +72,25 @@ class LLMProviderSettings(BaseModel):
     temperature: float = Field(default=0.7, ge=0, le=2)
 
 
+class MultiAgentSettings(BaseModel):
+    """多智能体配置，对应 Go 版本的 MultiAgentConfig"""
+    enabled: bool = True
+    indicator_provider: str = "openai"
+    pattern_provider: str = "openai"
+    trend_provider: str = "openai"
+    indicator_template: str = "agent_indicator"
+    pattern_template: str = "agent_pattern"
+    trend_template: str = "agent_trend"
+    max_blocks: int = Field(default=4, ge=1, le=8)
+
+
 class AISettings(BaseModel):
     """AI配置"""
     providers: List[LLMProviderSettings] = []
     min_confidence: float = Field(default=0.7, ge=0, le=1)
     cache_duration: int = Field(default=300, ge=0)  # 秒
     memory_size: int = Field(default=100, ge=0)
+    multi_agent: MultiAgentSettings = MultiAgentSettings()
 
     @validator("providers")
     def validate_providers(cls, v):
