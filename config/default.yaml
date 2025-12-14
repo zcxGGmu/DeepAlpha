@@ -1,0 +1,162 @@
+# DeepAlpha 默认配置文件
+
+# 应用配置
+app:
+  name: "DeepAlpha"
+  version: "1.0.0"
+  debug: false
+  log_level: "INFO"
+
+# 数据库配置
+database:
+  url: "sqlite:///./deepalpha.db"
+  echo: false
+  pool_size: 5
+  max_overflow: 10
+
+# Redis配置
+redis:
+  url: "redis://localhost:6379/0"
+  max_connections: 10
+
+# 交易所配置
+exchange:
+  name: "binance"
+  sandbox: true
+  test_mode: true
+  # api_key: "${BINANCE_API_KEY}"  # 从环境变量读取
+  # api_secret: "${BINANCE_API_SECRET}"
+
+# AI配置
+ai:
+  min_confidence: 0.7
+  cache_duration: 300  # 5分钟
+  memory_size: 100
+  providers:
+    - name: "openai"
+      model: "gpt-4"
+      weight: 0.4
+      max_tokens: 4000
+      temperature: 0.7
+      # api_key: "${OPENAI_API_KEY}"
+
+    - name: "anthropic"
+      model: "claude-3-opus-20240229"
+      weight: 0.3
+      max_tokens: 4000
+      temperature: 0.7
+      # api_key: "${ANTHROPIC_API_KEY}"
+
+    - name: "deepseek"
+      model: "deepseek-chat"
+      weight: 0.3
+      max_tokens: 4000
+      temperature: 0.7
+      # api_key: "${DEEPSEEK_API_KEY}"
+
+# 交易配置
+trading:
+  symbols:
+    - "BTC/USDT"
+    - "ETH/USDT"
+    - "BNB/USDT"
+
+  timeframes:
+    - "1m"
+    - "5m"
+    - "15m"
+    - "1h"
+    - "4h"
+    - "1d"
+
+  # 风险管理
+  max_position_size: 0.02      # 每笔交易最大仓位（2%）
+  max_total_position: 0.5      # 总仓位上限（50%）
+  stop_loss: 0.02              # 止损（2%）
+  take_profit: 0.06            # 止盈（6%）
+  trailing_stop: true          # 追踪止损
+
+  # 交易限制
+  max_trades_per_day: 10       # 每日最大交易数
+  max_drawdown: 0.10           # 最大回撤（10%）
+  min_profit_ratio: 1.5        # 最小盈亏比
+
+  # 决策参数
+  decision_interval: 60        # 决策间隔（秒）
+  horizon_hours: 24            # 持仓周期（小时）
+
+# 通知配置
+notification:
+  telegram:
+    enabled: false
+    # bot_token: "${TELEGRAM_BOT_TOKEN}"
+    # chat_id: "${TELEGRAM_CHAT_ID}"
+    notify_on_trade: true
+    notify_on_decision: true
+    notify_on_error: true
+
+# API配置
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  cors_origins: ["*"]
+  rate_limit: "100/minute"
+  # secret_key: "${SECRET_KEY}"
+  access_token_expire_minutes: 30
+
+# 智能体配置
+agents:
+  technical:
+    enabled: true
+    indicators:
+      - name: "EMA"
+        periods: [7, 25, 99]
+      - name: "RSI"
+        period: 14
+        oversold: 30
+        overbought: 70
+      - name: "MACD"
+        fast: 12
+        slow: 26
+        signal: 9
+      - name: "ATR"
+        period: 14
+
+  pattern:
+    enabled: true
+    patterns:
+      - "hammer"
+      - "doji"
+      - "engulfing"
+      - "harami"
+      - "morning_star"
+      - "evening_star"
+      - "head_shoulder"
+      - "double_top"
+      - "double_bottom"
+
+  trend:
+    enabled: true
+    timeframes: ["1h", "4h", "1d"]
+    lookback_periods: [7, 25, 99]
+
+# 数据源配置
+data:
+  history_days: 30          # 历史数据天数
+  real_time: true           # 实时数据
+  cache_duration: 60        # 缓存时长（秒）
+
+# 监控配置
+monitoring:
+  enabled: true
+  metrics_endpoint: "/metrics"
+  health_endpoint: "/health"
+
+# 日志配置
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/deepalpha.log"
+  max_size: "100MB"
+  backup_count: 5

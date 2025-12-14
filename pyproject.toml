@@ -1,0 +1,179 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepalpha"
+version = "1.0.0"
+description = "AI驱动的多智能体量化交易系统"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "DeepAlpha Team", email = "team@deepalpha.com"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.12.0",
+    "redis>=5.0.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "TA-Lib>=0.4.25",
+    "mplfinance>=0.12.10b0",
+    "ccxt>=4.0.0",
+    "python-telegram-bot>=20.0",
+    "websockets>=12.0",
+    "openai>=1.0.0",
+    "anthropic>=0.7.0",
+    "python-multipart>=0.0.6",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "prometheus-client>=0.17.0",
+    "structlog>=23.0.0",
+    "rich>=13.0.0",
+    "typer>=0.9.0",
+    "httpx>=0.25.0",
+    "aiofiles>=23.0.0",
+    "psycopg2-binary>=2.9.0",
+    "aiosqlite>=0.19.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.5.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.4.0",
+]
+test = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "factory-boy>=3.3.0",
+    "faker>=19.0.0",
+]
+
+[project.scripts]
+deepalpha = "deepalpha.main:main"
+
+[project.urls]
+Homepage = "https://github.com/zcxGGmu/DeepAlpha"
+Documentation = "https://github.com/zcxGGmu/DeepAlpha/docs"
+Repository = "https://github.com/zcxGGmu/DeepAlpha.git"
+"Bug Tracker" = "https://github.com/zcxGGmu/DeepAlpha/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["deepalpha*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["deepalpha"]
+
+[tool.mypy]
+python_version = "3.10"
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+strict_equality = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = [
+    "talib.*",
+    "mplfinance.*",
+    "ccxt.*",
+    "telegram.*",
+]
+ignore_missing_imports = true
+
+[tool.ruff]
+select = ["E", "F", "W", "I", "N", "B", "C90"]
+line-length = 88
+target-version = "py310"
+ignore = ["E501", "B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=deepalpha",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow tests",
+]
+
+[tool.coverage.run]
+source = ["deepalpha"]
+omit = [
+    "*/tests/*",
+    "*/venv/*",
+    "*/virtualenv/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

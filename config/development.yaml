@@ -1,0 +1,32 @@
+# 开发环境配置
+
+app:
+  debug: true
+  log_level: "DEBUG"
+
+database:
+  url: "sqlite:///./deepalpha_dev.db"
+  echo: true
+
+# 开发环境可以使用模拟交易
+exchange:
+  sandbox: true
+  test_mode: true
+
+# 减少交易频率以节省成本
+trading:
+  decision_interval: 300  # 5分钟
+  max_trades_per_day: 5
+
+# API配置
+api:
+  host: "127.0.0.1"
+  port: 8000
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+
+# 通知在开发环境关闭
+notification:
+  telegram:
+    enabled: false
