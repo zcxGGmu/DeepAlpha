@@ -1,4 +1,4 @@
-# DeepAlpha - LLM-Driven Multi-Agent Quantitative Trading System
+# DeepAlpha - 大模型驱动的多智能体量化交易系统
 
 ![DeepAlpha](https://img.shields.io/badge/DeepAlpha-v1.0.0-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.10+-green.svg)
@@ -6,164 +6,163 @@
 ![Rust](https://img.shields.io/badge/Rust-1.74+-orange.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-DeepAlpha is a Python/Rust hybrid architecture quantitative trading system driven by Large Language Models (LLMs), featuring a multi-agent architecture that makes trading decisions through AI models and integrates an ultra-high-performance Rust execution engine.
+DeepAlpha是一个基于大模型驱动的Python/Rust混合架构量化交易系统，采用多智能体架构，通过AI模型进行交易决策，集成了超高性能的Rust执行引擎。
 
-## 🌟 Core Features
+## 🌟 核心特性
 
-### Multi-Agent System
-- **Technical Agent**: Professional technical indicator analysis (EMA, RSI, MACD, ATR, etc.)
-- **Pattern Agent**: Intelligent candlestick pattern recognition (head & shoulders, engulfing, evening star, etc.)
-- **Trend Agent**: Multi-timeframe trend analysis and prediction
-- **Risk Agent**: Intelligent risk assessment and position management
-- **News Agent**: News sentiment analysis and market impact assessment
+### 多智能体系统
+- **Technical Agent**: 专业技术指标分析（EMA、RSI、MACD、ATR等）
+- **Pattern Agent**: 智能K线形态识别（头肩顶、吞没、黄昏星等）
+- **Trend Agent**: 多时间框架趋势分析和预测
+- **Risk Agent**: 智能风险评估和仓位管理
 
-### AI Decision Engine
-- Support for multiple LLM Providers (OpenAI, Anthropic Claude, DeepSeek, etc.)
-- Intelligent voting mechanism and decision aggregation
-- Decision caching and historical memory
-- Dynamic weight adjustment
+### AI决策引擎
+- 支持多个LLM Provider（OpenAI、Anthropic Claude、DeepSeek等）
+- 智能投票机制和决策聚合
+- 决策缓存和历史记忆
+- 动态权重调整
 
-### 🚀 Rust Performance Optimization Modules
-Complete Rust migration achieves ultra-high-performance core components:
+### 🚀 Rust性能优化模块
+经过完整的Rust迁移，实现了超高性能的核心组件：
 
-1. **Technical Indicators Engine** (`rust/src/indicators`)
-   - Supports 50+ technical indicators (SMA, EMA, RSI, MACD, Bollinger Bands, etc.)
-   - **Performance**: > 50,000 candles/second processing speed
-   - **Optimization**: SIMD instruction set optimization, multi-core parallel computing
-   - **Memory**: Zero-copy operations, 30-50% memory reduction
+1. **技术指标引擎** (`rust/src/indicators`)
+   - 支持50+种技术指标（SMA、EMA、RSI、MACD、Bollinger Bands等）
+   - **性能**: > 50,000 K线/秒处理速度
+   - **优化**: SIMD指令集优化，多核并行计算
+   - **内存**: 零拷贝操作，减少30-50%内存使用
 
-2. **WebSocket Manager** (`rust/src/websocket`)
-   - Supports 10,000+ concurrent WebSocket connections
-   - Automatic reconnection and heartbeat mechanism
-   - Message broadcasting and subscription management
-   - **Latency**: < 1ms message processing
+2. **WebSocket管理器** (`rust/src/websocket`)
+   - 支持10,000+并发WebSocket连接
+   - 自动重连和心跳保活机制
+   - 消息广播和订阅管理
+   - **延迟**: < 1ms消息处理
 
-3. **Data Stream Processor** (`rust/src/stream`)
-   - Real-time data stream processing pipeline
-   - Supports 100,000+ data points/second
-   - Data validation and transformation
-   - Asynchronous batch processing optimization
+3. **数据流处理器** (`rust/src/stream`)
+   - 实时数据流处理管道
+   - 支持100,000+数据点/秒
+   - 数据验证和转换
+   - 异步批处理优化
 
-4. **Trading Execution Engine** (`rust/src/executor`)
-   - **Ultra-low latency**: Average 50μs order submission, P99 < 100μs
-   - **High throughput**: 1,000+ orders/second processing capability
-   - Risk management and real-time control
-   - Position and portfolio management
+4. **交易执行引擎** (`rust/src/executor`)
+   - **超低延迟**: 平均50μs订单提交，P99 < 100μs
+   - **高吞吐**: 1,000+订单/秒处理能力
+   - 风险管理和实时风控
+   - 仓位和投资组合管理
 
-### Risk Management
-- Real-time risk checking and position control
-- Strict position management (1-2% net assets per trade)
-- Dynamic stop-loss and take-profit mechanisms
-- Maximum drawdown protection
-- Portfolio risk diversification
+### 风险管理
+- 实时风险检查和头寸控制
+- 严格的仓位管理（每笔交易1-2%净资产）
+- 动态止损止盈机制
+- 最大回撤保护
+- 组合风险分散
 
-### High-Performance Architecture
-- Asynchronous concurrent processing (asyncio)
-- Real-time WebSocket data streams
-- **Rust Performance Modules**: 3-5x performance improvement, 30-50% memory optimization
-- Distributed deployment support
-- Comprehensive monitoring and logging system
+### 高性能架构
+- 异步并发处理（asyncio）
+- 实时WebSocket数据流
+- **Rust性能模块**：3-5倍性能提升，30-50%内存优化
+- 分布式部署支持
+- 完善的监控和日志系统
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### Requirements
+### 环境要求
 
 - Python 3.10+
-- Rust 1.74+ (for performance modules)
-- Redis (for caching)
-- PostgreSQL/SQLite (for data storage)
-- Docker (optional, for containerized deployment)
+- Rust 1.74+ (用于性能模块)
+- Redis（用于缓存）
+- PostgreSQL/SQLite（用于数据存储）
+- Docker（可选，用于容器化部署）
 
-### Installation
+### 安装
 
-1. **Clone the project**
+1. **克隆项目**
 ```bash
 git clone https://github.com/zcxGGmu/DeepAlpha.git
 cd DeepAlpha
 ```
 
-2. **Create virtual environment**
+2. **创建虚拟环境**
 ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# or venv\Scripts\activate  # Windows
+# 或 venv\Scripts\activate  # Windows
 ```
 
-3. **Install Python dependencies**
+3. **安装Python依赖**
 ```bash
 pip install -r requirements/prod.txt
 ```
 
-4. **Install Rust Performance Modules**
+4. **安装 Rust 性能模块**
 ```bash
-# Quick installation script (recommended)
+# 快速安装脚本（推荐）
 ./scripts/install_rust.sh
 
-# Or manual installation
+# 或手动安装
 cd rust
 pip install maturin
 maturin develop --release
 ```
 
-5. **Configure environment variables**
+5. **配置环境变量**
 ```bash
 cp .env.example .env
-# Edit .env file, fill in your API keys and configuration
+# 编辑 .env 文件，填入你的API密钥和配置
 ```
 
-6. **Initialize database**
+6. **初始化数据库**
 ```bash
 python scripts/migrate.py
 ```
 
-7. **Start the system**
+7. **启动系统**
 ```bash
 python scripts/start.py
 ```
 
-### Rust Performance Module Verification
+### Rust 性能模块验证
 
-After installation, run performance benchmarks to verify Rust module performance:
+安装完成后，可以运行性能基准测试验证Rust模块的性能：
 
 ```bash
-# Technical indicators performance test
+# 技术指标性能测试
 cd rust/tests
 python test_indicators_performance.py
 
-# WebSocket performance test
+# WebSocket性能测试
 python test_websocket_performance.py
 
-# Data stream performance test
+# 数据流性能测试
 python test_stream_performance.py
 
-# Execution engine performance test
+# 执行引擎性能测试
 python test_executor_performance.py
 ```
 
-**Expected Performance Improvements**:
-- Technical indicators: 50,000+ candles/second (5-10x improvement over Python)
-- WebSocket connections: 10,000+ concurrent connections (< 1ms latency)
-- Data stream processing: 100,000+ data points/second
-- Order execution: 1,000+ orders/second (average latency < 50μs)
-- Memory usage: 30-50% reduction
+**预期性能提升**：
+- 技术指标计算：50,000+ K线/秒（相比Python提升5-10倍）
+- WebSocket连接：10,000+并发连接（< 1ms延迟）
+- 数据流处理：100,000+数据点/秒
+- 订单执行：1,000+订单/秒（平均延迟 < 50μs）
+- 内存使用：减少30-50%
 
-### Docker Deployment
+### Docker部署
 
 ```bash
-# Build image with Rust performance modules
+# 构建包含Rust性能模块的镜像
 docker build -t deepalpha .
 
-# Start services
+# 启动服务
 docker-compose up -d
 ```
 
-## 📖 System Architecture
+## 📖 系统架构
 
-### Overall Architecture Overview
+### 整体架构概览
 
 ```mermaid
 graph TB
-    %% External Data Sources
+    %% 外部数据源
     subgraph "External Data Sources"
         B1[Binance API]
         B2[Other Exchanges]
@@ -171,14 +170,14 @@ graph TB
         B4[Sentiment APIs]
     end
 
-    %% Data Collection Layer
+    %% 数据收集层
     subgraph "Data Collection"
         C1[WebSocket Connectors]
         C2[REST API Pollers]
         C3[News Aggregator]
     end
 
-    %% Rust High-Performance Layer
+    %% Rust高性能层
     subgraph "Rust Performance Layer"
         D1[WebSocket Manager<br/>10K+ Connections<br/><1ms Latency]
         D2[Stream Processor<br/>100K+ Points/sec]
@@ -186,14 +185,14 @@ graph TB
         D4[Execution Engine<br/>1K+ Orders/sec<br/><50μs Latency]
     end
 
-    %% Storage Layer
+    %% 存储层
     subgraph "Storage Layer"
         E1[(PostgreSQL<br/>Time Series Data)]
         E2[(Redis<br/>Cache & Session)]
         E3[(InfluxDB<br/>Market Data)]
     end
 
-    %% Python Business Logic Layer
+    %% Python业务逻辑层
     subgraph "Python Business Logic"
         subgraph "Multi-Agent System"
             F1[Technical Agent<br/>TA Analysis]
@@ -210,28 +209,28 @@ graph TB
         end
     end
 
-    %% Execution Layer
+    %% 执行层
     subgraph "Execution Layer"
         I1[Order Manager]
         I2[Position Manager]
         I3[Risk Manager]
     end
 
-    %% Gateway Layer
+    %% 网关层
     subgraph "Gateway Layer"
         J1[Exchange Gateway]
         J2[Notification Gateway]
         J3[API Gateway]
     end
 
-    %% Interface Layer
+    %% 接口层
     subgraph "Interface Layer"
         K1[REST API<br/>FastAPI]
         K2[WebSocket Server]
         K3[Web Dashboard]
     end
 
-    %% Data Flow
+    %% 数据流
     B1 --> C1
     B2 --> C2
     B3 --> C3
@@ -269,115 +268,115 @@ graph TB
     class B1,B2,B3,B4 external
 ```
 
-### Core Components Details
+### 核心组件详解
 
-#### 🚀 Rust Performance Optimization Layer
+#### 🚀 Rust性能优化层
 
-1. **WebSocket Manager** (`rust/src/websocket/`)
-   - Supports 10,000+ concurrent connections
-   - Message latency < 1ms
-   - Automatic reconnection and heartbeat mechanism
-   - JWT authentication and permission control
+1. **WebSocket管理器** (`rust/src/websocket/`)
+   - 支持10,000+并发连接
+   - 消息延迟 < 1ms
+   - 自动重连和心跳机制
+   - JWT认证和权限控制
 
-2. **Data Stream Processor** (`rust/src/stream/`)
-   - 100,000+ data points/second processing capability
-   - Zero-copy ring buffer
-   - Real-time data validation and cleaning
-   - Asynchronous batch processing optimization
+2. **数据流处理器** (`rust/src/stream/`)
+   - 100,000+数据点/秒处理能力
+   - 零拷贝环形缓冲区
+   - 实时数据验证和清洗
+   - 异步批处理优化
 
-3. **Technical Indicators Engine** (`rust/src/indicators/`)
-   - 50+ technical indicators support
-   - SIMD instruction set optimization
-   - 50,000+ candles/second calculation speed
-   - Batch calculation support
+3. **技术指标引擎** (`rust/src/indicators/`)
+   - 50+种技术指标支持
+   - SIMD指令集优化
+   - 50,000+K线/秒计算速度
+   - 支持批量计算
 
-4. **Trading Execution Engine** (`rust/src/executor/`)
-   - Ultra-low latency: average 50μs
-   - 1,000+ orders/second throughput
-   - Real-time risk control
-   - Position and portfolio management
+4. **交易执行引擎** (`rust/src/executor/`)
+   - 超低延迟：平均50μs
+   - 1,000+订单/秒吞吐量
+   - 实时风险控制
+   - 仓位和组合管理
 
-#### 🤖 Python Intelligent Agent System
+#### 🤖 Python智能体系统
 
 1. **Technical Agent**
-   - Professional technical indicator analysis
-   - Multi-timeframe support
-   - Indicator signal aggregation
+   - 专业技术指标分析
+   - 多时间框架支持
+   - 指标信号聚合
 
 2. **Pattern Agent**
-   - 30+ candlestick pattern recognition
-   - Support and resistance analysis
-   - Pattern strength assessment
+   - 30+K线形态识别
+   - 支撑阻力位分析
+   - 形态强度评估
 
 3. **Trend Agent**
-   - Multi-timeframe trend analysis
-   - Trend consistency check
-   - Trend reversal prediction
+   - 多时间框架趋势分析
+   - 趋势一致性检查
+   - 趋势反转预测
 
 4. **Risk Agent**
-   - Real-time risk assessment
-   - VaR calculation
-   - Hedging recommendations
+   - 实时风险评估
+   - VaR计算
+   - 对冲建议
 
 5. **News Agent**
-   - Real-time news analysis
-   - Sentiment scoring
-   - Event impact assessment
+   - 实时新闻分析
+   - 情感评分
+   - 事件影响评估
 
-### Detailed Architecture Documentation
+### 详细架构文档
 
-For complete system architecture documentation, please refer to: [System Architecture](./docs/system-architecture.md)
+完整的系统架构说明请参考：[System Architecture](./docs/system-architecture.md)
 
-This document includes:
-- Detailed component descriptions
-- Data flow analysis
-- Performance optimization strategies
-- Deployment architecture guide
+该文档包含：
+- 详细的组件说明
+- 数据流分析
+- 性能优化策略
+- 部署架构指南
 
-## 📊 Sub-Function Module Architecture
+## 📊 子功能模块架构
 
-### 1. Market Data Module Architecture
+### 1. 市场数据模块架构
 
 ```mermaid
 graph TB
-    subgraph "Market Data Module Architecture"
-        subgraph "Data Source Layer"
+    subgraph "市场数据模块架构"
+        subgraph "数据源层"
             DS1[Binance WebSocket]
-            DS2[REST API Polling]
-            DS3[News Data Source]
-            DS4[Sentiment Data Source]
+            DS2[REST API轮询]
+            DS3[新闻数据源]
+            DS4[情绪数据源]
         end
 
-        subgraph "Data Collection Layer"
-            DC1[WebSocket Connector]
-            DC2[REST Poller]
-            DC3[News Aggregator]
-            DC4[Data Validator]
+        subgraph "数据采集层"
+            DC1[WebSocket连接器]
+            DC2[REST轮询器]
+            DC3[新闻聚合器]
+            DC4[数据验证器]
         end
 
-        subgraph "Data Stream Processing Layer"
-            DP1[Real-time Data Stream<br/>100K+ pts/s]
-            DP2[Historical Data Manager]
-            DP3[Data Cleaner]
-            DP4[Data Normalizer]
+        subgraph "数据流处理层"
+            DP1[实时数据流<br/>100K+ pts/s]
+            DP2[历史数据管理器]
+            DP3[数据清洗器]
+            DP4[数据标准化器]
         end
 
-        subgraph "Storage Layer"
-            ST1[(Redis Cache<br/>ms-level Access)]
-            ST2[(PostgreSQL<br/>Time Series Data)]
-            ST3[(InfluxDB<br/>Market Data)]
+        subgraph "存储层"
+            ST1[(Redis缓存<br/>毫秒级访问)]
+            ST2[(PostgreSQL<br/>时序数据)]
+            ST3[(InfluxDB<br/>市场数据)]
         end
 
-        subgraph "RUST Acceleration Layer"
-            RU1[Batch Processor<br/>50K+ candles/s]
-            RU2[Data Compressor<br/>30-50% Volume Optimization]
-            RU3[Index Builder<br/>Real-time Index]
+        subgraph "RUST加速层"
+            RU1[批量处理器<br/>50K+ candles/s]
+            RU2[数据压缩器<br/>30-50%体积优化]
+            RU3[索引构建器<br/>实时索引]
         end
 
-        subgraph "Service Interface Layer"
-            API1[Real-time Data API]
-            API2[Historical Data API]
-            API3[Subscription Manager]
+        subgraph "服务接口层"
+            API1[实时数据API]
+            API2[历史数据API]
+            API3[订阅管理器]
         end
     end
 
@@ -412,75 +411,75 @@ graph TB
     class API1,API2,API3 api
 ```
 
-**Core Features**:
-- **Multi-source Data Fusion**: Support for WebSocket, REST API, news, sentiment, and other multi-source data
-- **Real-time Stream Processing**: 100,000+ data points/second processing capability
-- **RUST Acceleration**: 50,000+ candles/second, 3-5x performance improvement
-- **Smart Caching**: Redis millisecond-level access, InfluxDB efficient storage
+**核心特性**：
+- **多源数据融合**：支持WebSocket、REST API、新闻、情绪等多源数据
+- **实时流处理**：100,000+数据点/秒处理能力
+- **RUST加速**：50,000+K线/秒，3-5倍性能提升
+- **智能缓存**：Redis毫秒级访问，InfluxDB高效存储
 
-### 2. Multi-Agent System Architecture
+### 2. 多智能体系统架构
 
 ```mermaid
 graph TB
-    subgraph "Multi-Agent System Architecture"
-        subgraph "Data Input Layer"
-            DI1[Market Data Stream]
-            DI2[Technical Indicator Data]
-            DI3[News Sentiment Data]
-            DI4[Historical Decision Records]
+    subgraph "多智能体系统架构"
+        subgraph "数据输入层"
+            DI1[市场数据流]
+            DI2[技术指标数据]
+            DI3[新闻情感数据]
+            DI4[历史决策记录]
         end
 
-        subgraph "AI Agent Layer"
+        subgraph "AI智能体层"
             subgraph "Technical Agent"
-                TA1[Technical Indicator Analyzer]
-                TA2[Multi-timeframe Fusion]
-                TA3[Signal Generator]
+                TA1[技术指标分析器]
+                TA2[多时间框架融合]
+                TA3[信号生成器]
             end
 
             subgraph "Pattern Agent"
-                PA1[Candlestick Pattern Recognizer<br/>30+ patterns]
-                PA2[Support Resistance Analyzer]
-                PA3[Pattern Strength Assessor]
+                PA1[K线形态识别器<br/>30+ patterns]
+                PA2[支撑阻力分析器]
+                PA3[形态强度评估器]
             end
 
             subgraph "Trend Agent"
-                TR1[Trend Analyzer]
-                TR2[Multi-timeframe Validation]
-                TR3[Reversal Predictor]
+                TR1[趋势分析器]
+                TR2[多时间框架验证]
+                TR3[反转预测器]
             end
 
             subgraph "Risk Agent"
-                RA1[Risk Assessor]
-                RA2[VaR Calculator]
-                RA3[Hedging Recommender]
+                RA1[风险评估器]
+                RA2[VaR计算器]
+                RA3[对冲建议器]
             end
 
             subgraph "News Agent"
-                NA1[News Sentiment Analyzer]
-                NA2[Event Impact Assessor]
-                NA3[Market Correlation Analyzer]
+                NA1[新闻情感分析器]
+                NA2[事件影响评估器]
+                NA3[市场相关性分析器]
             end
         end
 
-        subgraph "LLM Management Layer"
-            LM1[Load Balancer<br/>Dynamic Weight Allocation]
-            LM2[LLM Provider Manager<br/>OpenAI/Claude/DeepSeek]
-            LM3[Response Aggregator]
-            LM4[Error Handler]
+        subgraph "LLM管理层"
+            LM1[负载均衡器<br/>动态权重分配]
+            LM2[LLM提供商管理器<br/>OpenAI/Claude/DeepSeek]
+            LM3[响应聚合器]
+            LM4[错误处理器]
         end
 
-        subgraph "Decision Fusion Layer"
-            DF1[Signal Aggregator<br/>Agent Voting]
-            DF2[Conflict Resolver<br/>Priority Mechanism]
-            DF3[Decision Cache<br/>Redis-backed]
-            DF4[Memory Manager<br/>100 Decision History]
+        subgraph "决策融合层"
+            DF1[信号聚合器<br/>智能体投票]
+            DF2[冲突解决器<br/>优先级机制]
+            DF3[决策缓存器<br/>Redis-backed]
+            DF4[记忆管理器<br/>100决策历史]
         end
 
-        subgraph "Output Layer"
-            OU1[Trading Decision Signal]
-            OU2[Confidence Score]
-            OU3[Decision Explanation]
-            OU4[Risk Warning]
+        subgraph "输出层"
+            OU1[交易决策信号]
+            OU2[置信度评分]
+            OU3[决策解释]
+            OU4[风险提示]
         end
     end
 
@@ -520,65 +519,65 @@ graph TB
     class OU1,OU2,OU3,OU4 output
 ```
 
-**Core Features**:
-- **5 Specialized Agents**: Technical, Pattern, Trend, Risk, News agents
-- **LLM Integration**: Support for OpenAI, Claude, DeepSeek and other providers
-- **Intelligent Decision Fusion**: Voting mechanism, conflict resolution, dynamic weight adjustment
-- **Decision Cache & Memory**: Redis cache, 100 decision history memory
+**核心特性**：
+- **5大专业化智能体**：技术、形态、趋势、风险、新闻智能体
+- **LLM集成**：支持OpenAI、Claude、DeepSeek等多个提供商
+- **智能决策融合**：投票机制、冲突解决、动态权重调整
+- **决策缓存与记忆**：Redis缓存，100决策历史记忆
 
-### 3. Decision Engine Architecture
+### 3. 决策引擎架构
 
 ```mermaid
 graph TB
-    subgraph "Decision Engine Architecture"
-        subgraph "Agent Input Layer"
-            AI1[Technical Agent<br/>Technical Analysis Signal]
-            AI2[Pattern Agent<br/>Pattern Recognition Signal]
-            AI3[Trend Agent<br/>Trend Analysis Signal]
-            AI4[Risk Agent<br/>Risk Assessment Signal]
-            AI5[News Agent<br/>News Sentiment Signal]
+    subgraph "决策引擎架构"
+        subgraph "智能体输入层"
+            AI1[Technical Agent<br/>技术分析信号]
+            AI2[Pattern Agent<br/>形态识别信号]
+            AI3[Trend Agent<br/>趋势分析信号]
+            AI4[Risk Agent<br/>风险评估信号]
+            AI5[News Agent<br/>新闻情绪信号]
         end
 
-        subgraph "Input Preprocessing Layer"
-            PR1[Signal Normalizer<br/>Unified Signal Format]
-            PR2[Quality Assessor<br/>Confidence Scoring]
-            PR3[Weight Calculator<br/>Dynamic Weight Allocation]
-            PR4[Priority Sorter<br/>Signal Importance]
+        subgraph "输入预处理层"
+            PR1[信号标准化器<br/>统一信号格式]
+            PR2[质量评估器<br/>置信度评分]
+            PR3[权重计算器<br/>动态权重分配]
+            PR4[优先级排序器<br/>信号重要性]
         end
 
-        subgraph "Signal Synthesis Engine"
-            SE1[Signal Aggregator<br/>1000+ signals/s]
-            SE2[Conflict Detector<br/>Signal Conflict Detection]
-            SE3[Weighted Voting Machine<br/>Weighted Decision]
-            SE4[Confidence Calculator<br/>Decision Reliability]
+        subgraph "信号合成引擎"
+            SE1[信号聚合器<br/>1000+ signals/s]
+            SE2[冲突检测器<br/>信号冲突识别]
+            SE3[权重投票机<br/>加权决策]
+            SE4[置信度计算器<br/>决策可靠性]
         end
 
-        subgraph "Conflict Resolution Mechanism"
-            CR1[Risk Assessor<br/>Risk Priority Principle]
-            CR2[Historical Validator<br/>Success Rate Statistics]
-            CR3[Market Environment Adapter<br/>Trend Adaptation]
-            CR4[Manual Rule Engine<br/>Trading Strategy]
+        subgraph "冲突解决机制"
+            CR1[风险评估器<br/>风险优先原则]
+            CR2[历史验证器<br/>成功率统计]
+            CR3[市场环境器<br/>趋势适应]
+            CR4[人工规则引擎<br/>交易策略]
         end
 
-        subgraph "LLM Enhanced Decision"
-            LL1[Context Builder<br/>Market State Snapshot]
-            LL2[Prompt Generator<br/>Intelligent Prompt]
-            LL3[LLM Call Manager<br/>Multi-provider Support]
-            LL4[Response Parser<br/>Decision Extraction]
+        subgraph "LLM增强决策"
+            LL1[上下文构建器<br/>市场状态快照]
+            LL2[提示词生成器<br/>智能提示]
+            LL3[LLM调用管理器<br/>多提供商支持]
+            LL4[响应解析器<br/>决策提取]
         end
 
-        subgraph "Decision Optimizer"
-            OP1[Real-time Optimizer<br/>Parameter Tuning]
-            OP2[Performance Assessor<br/>Success Rate Statistics]
-            OP3[Learning Engine<br/>Reinforcement Learning]
-            OP4[Parameter Updater<br/>Dynamic Adjustment]
+        subgraph "决策优化器"
+            OP1[实时优化器<br/>参数调优]
+            OP2[性能评估器<br/>成功率统计]
+            OP3[学习引擎<br/>强化学习]
+            OP4[参数更新器<br/>动态调整]
         end
 
-        subgraph "Output Management Layer"
-            OU1[Final Decision Maker<br/>Buy/Sell/Hold]
-            OU2[Confidence Output<br/>0-100%]
-            OU3[Decision Cache<br/>5min Cache]
-            OU4[Explanation Generator<br/>Decision Rationale]
+        subgraph "输出管理层"
+            OU1[最终决策器<br/>Buy/Sell/Hold]
+            OU2[置信度输出<br/>0-100%]
+            OU3[决策缓存器<br/>5分钟缓存]
+            OU4[解释生成器<br/>决策理由]
         end
     end
 
@@ -624,64 +623,64 @@ graph TB
     class OU1,OU2,OU3,OU4 output
 ```
 
-**Core Features**:
-- **High-performance Processing**: 1,000+ signals/second, 10ms synthesis latency
-- **Intelligent Conflict Resolution**: Risk assessment, historical validation, market environment adaptation
-- **LLM Enhancement**: Multi-provider support, intelligent decision explanation
-- **Real-time Optimization**: Reinforcement learning, dynamic parameter adjustment
+**核心特性**：
+- **高性能处理**：1,000+信号/秒，10ms合成延迟
+- **智能冲突解决**：风险评估、历史验证、市场环境适应
+- **LLM增强**：多提供商支持，智能决策解释
+- **实时优化**：强化学习，动态参数调整
 
-### 4. Execution Engine Architecture
+### 4. 执行引擎架构
 
 ```mermaid
 graph TB
-    subgraph "Execution Engine Architecture"
-        subgraph "Decision Input Layer"
-            DI1[Decision Signal<br/>Buy/Sell/Hold]
-            DI2[Target Symbol<br/>Symbol Info]
-            DI3[Trading Parameters<br/>Quantity/Price]
-            DI4[Risk Limits<br/>Max Position]
+    subgraph "执行引擎架构"
+        subgraph "决策输入层"
+            DI1[决策信号<br/>Buy/Sell/Hold]
+            DI2[目标交易对<br/>Symbol Info]
+            DI3[交易参数<br/>Quantity/Price]
+            DI4[风险限制<br/>Max Position]
         end
 
-        subgraph "Order Preprocessing Layer"
-            OP1[Order Validator<br/>Parameter Compliance]
-            OP2[Risk Pre-checker<br/>100μs Assessment]
-            OP3[Position Calculator<br/>Dynamic Adjustment]
-            OP4[Price Optimizer<br/>Optimal Price]
+        subgraph "订单预处理层"
+            OP1[订单验证器<br/>参数合规性]
+            OP2[风险预检器<br/>100μs评估]
+            OP3[仓位计算器<br/>动态调整]
+            OP4[价格优化器<br/>最优价格]
         end
 
-        subgraph "RUST Execution Core"
-            RU1[Order Router<br/>1,000+ orders/s]
-            RU2[State Manager<br/>Real-time Sync]
-            RU3[Queue Manager<br/>Priority Queue]
-            RU4[Batch Processor<br/>Batch Optimization]
+        subgraph "RUST执行核心"
+            RU1[订单路由器<br/>1,000+ orders/s]
+            RU2[状态管理器<br/>实时同步]
+            RU3[队列管理器<br/>优先级队列]
+            RU4[批量处理器<br/>批量优化]
         end
 
-        subgraph "Gateway Adapter Layer"
-            GW1[Binance Gateway<br/>Primary Interface]
-            GW2[Freqtrade Gateway<br/>Strategy Integration]
-            GW3[Simulation Gateway<br/>Backtest Validation]
-            GW4[Gateway Manager<br/>Failover]
+        subgraph "网关适配层"
+            GW1[Binance网关<br/>主要接口]
+            GW2[Freqtrade网关<br/>策略集成]
+            GW3[模拟网关<br/>回测验证]
+            GW4[网关管理器<br/>故障转移]
         end
 
-        subgraph "Risk Control Layer"
-            RK1[Real-time Monitor<br/>100μs Check]
-            RK2[Limit Executor<br/>1,000+ checks/s]
-            RK3[Emergency Stopper<br/>Immediate Response]
-            RK4[Recovery Manager<br/>Auto Recovery]
+        subgraph "风险控制层"
+            RK1[实时监控器<br/>100μs检查]
+            RK2[限制执行器<br/>1,000+ checks/s]
+            RK3[紧急停止器<br/>即时响应]
+            RK4[恢复管理器<br/>自动恢复]
         end
 
-        subgraph "State Sync Layer"
-            SS1[Order Tracker<br/>Real-time Status]
-            SS2[Position Synchronizer<br/>Account Sync]
-            SS3[Trade Recorder<br/>Historical Records]
-            SS4[Reconciliation Manager<br/>Consistency Check]
+        subgraph "状态同步层"
+            SS1[订单跟踪器<br/>实时状态]
+            SS2[仓位同步器<br/>账户同步]
+            SS3[成交记录器<br/>历史记录]
+            SS4[对账管理器<br/>一致性检查]
         end
 
-        subgraph "Monitoring & Logging"
-            ML1[Performance Monitor<br/><50μs Latency]
-            ML2[Audit Logger<br/>Complete Records]
-            ML3[Metrics Collector<br/>Real-time Metrics]
-            ML4[Report Generator<br/>Periodic Reports]
+        subgraph "监控与日志"
+            ML1[性能监控器<br/><50μs延迟]
+            ML2[审计日志器<br/>完整记录]
+            ML3[指标收集器<br/>实时指标]
+            ML4[报告生成器<br/>定期报告]
         end
     end
 
@@ -726,73 +725,73 @@ graph TB
     class ML1,ML2,ML3,ML4 monitor
 ```
 
-**Core Features**:
-- **Ultra-low Latency Execution**: Average 50μs, P99 < 100μs
-- **High Throughput**: 1,000+ orders/second processing capability
-- **Multi-gateway Support**: Binance, Freqtrade, simulation trading
-- **Real-time Risk Control**: 100μs risk assessment, 1,000+ checks/second
+**核心特性**：
+- **超低延迟执行**：平均50μs，P99 < 100μs
+- **高吞吐量**：1,000+订单/秒处理能力
+- **多网关支持**：Binance、Freqtrade、模拟交易
+- **实时风险控制**：100μs风险评估，1,000+检查/秒
 
-### 5. Risk Management Architecture
+### 5. 风险管理架构
 
 ```mermaid
 graph TB
-    subgraph "Risk Management Architecture"
-        subgraph "Real-time Calculation Engine"
-            RC1[VaR Calculator<br/>99% 1-day VaR]
-            RC2[CVaR Calculator<br/>Conditional Value at Risk]
-            RC3[Volatility Calculator<br/>Real-time Volatility]
-            RC4[Correlation Calculator<br/>Asset Correlation]
+    subgraph "风险管理架构"
+        subgraph "实时计算引擎"
+            RC1[VaR计算器<br/>99% 1-day VaR]
+            RC2[CVaR计算器<br/>条件风险价值]
+            RC3[波动率计算器<br/>实时波动率]
+            RC4[相关性计算器<br/>资产相关性]
         end
 
-        subgraph "Panoramic Monitoring Dashboard"
-            MD1[Real-time Risk Metrics<br/>Comprehensive Risk Score]
-            MD2[Position Monitor<br/>Real-time Position Tracking]
-            MD3[Drawdown Monitor<br/>Maximum Drawdown Protection]
-            MD4[Concentration Monitor<br/>Risk Diversification]
+        subgraph "全景监控仪表盘"
+            MD1[实时风险指标<br/>综合风险评分]
+            MD2[仓位监控器<br/>实时仓位追踪]
+            MD3[回撤监控器<br/>最大回撤保护]
+            MD4[集中度监控器<br/>风险分散度]
         end
 
-        subgraph "Multi-level Limit System"
-            subgraph "Account Level Limits"
-                AL1[Total Position Limit<br/>95% Net Assets]
-                AL2[Total Leverage Limit<br/>3x Leverage]
-                AL3[Daily Loss Limit<br/>5% Daily Loss]
-                AL4[Monthly Drawdown Limit<br/>15% Monthly Drawdown]
+        subgraph "多层次限制体系"
+            subgraph "账户级限制"
+                AL1[总仓位限制<br/>95%净资产]
+                AL2[总杠杆限制<br/>3倍杠杆]
+                AL3[日亏损限制<br/>5%日损失]
+                AL4[月回撤限制<br/>15%月回撤]
             end
 
-            subgraph "Strategy Level Limits"
-                SL1[Single Strategy Position<br/>2% Net Assets]
-                SL2[Single Strategy Leverage<br/>2x Leverage]
-                SL3[Consecutive Loss Limit<br/>5 Consecutive]
-                SL4[Sharpe Ratio Requirement<br/>>1.0]
+            subgraph "策略级限制"
+                SL1[单策略仓位<br/>2%净资产]
+                SL2[单策略杠杆<br/>2倍杠杆]
+                SL3[连续亏损限制<br/>5笔连续]
+                SL4[夏普比率要求<br/>>1.0]
             end
 
-            subgraph "Instrument Level Limits"
-                IL1[Single Instrument Position<br/>5% Net Assets]
-                IL2[Single Instrument Stop Loss<br/>2% Fixed Stop Loss]
-                IL3[Liquidity Limit<br/>10% Daily Volume]
-                IL4[Volatility Limit<br/>50% Daily Volatility]
+            subgraph "品种级限制"
+                IL1[单品种仓位<br/>5%净资产]
+                IL2[单品种止损<br/>2%固定止损]
+                IL3[流动性限制<br/>日交易量10%]
+                IL4[波动率限制<br/>日波动50%]
             end
         end
 
-        subgraph "Dynamic Adjustment Mechanism"
-            DA1[Volatility Adjuster<br/>Vol Scaling]
-            DA2[Correlation Adjuster<br/>Correlation Scaling]
-            DA3[Concentration Adjuster<br/>Concentration Scaling]
-            DA4[Liquidity Adjuster<br/>Liquidity Scaling]
+        subgraph "动态调整机制"
+            DA1[波动率调整器<br/>Vol Scaling]
+            DA2[相关性调整器<br/>Correlation Scaling]
+            DA3[集中度调整器<br/>Concentration Scaling]
+            DA4[流动性调整器<br/>Liquidity Scaling]
         end
 
-        subgraph "Stress Testing Engine"
-            ST1[Historical Scenario Test<br/>Historical Event Replay]
-            ST2[Monte Carlo Simulation<br/>Random Scenarios]
-            ST3[Extreme Scenario Test<br/>Black Swan]
-            ST4[Portfolio Stress Test<br/>Portfolio Effects]
+        subgraph "压力测试引擎"
+            ST1[历史情景测试<br/>历史事件重演]
+            ST2[蒙特卡洛模拟<br/>随机情景]
+            ST3[极端情景测试<br/>Black Swan]
+            ST4[组合压力测试<br/>组合效应]
         end
 
-        subgraph "Real-time Monitoring System"
-            RM1[Risk Early Warning<br/>Multi-level Warning]
-            RM2[Auto Position Reducer<br/>Intelligent Reduction]
-            RM3[Emergency Stopper<br/>Immediate Stop]
-            RM4[Risk Reporter<br/>Real-time Report]
+        subgraph "实时监控系统"
+            RM1[风险预警器<br/>多级预警]
+            RM2[自动减仓器<br/>智能减仓]
+            RM3[紧急停止器<br/>立即停止]
+            RM4[风险报告器<br/>实时报告]
         end
     end
 
@@ -844,64 +843,64 @@ graph TB
     class RM1,RM2,RM3,RM4 system
 ```
 
-**Core Features**:
-- **Real-time Risk Calculation**: VaR/CVaR models, 100μs risk assessment
-- **Multi-level Limits**: Account, strategy, instrument three-tier limit system
-- **Dynamic Adjustment**: Volatility, correlation, liquidity-based dynamic adjustment
-- **Stress Testing**: Historical scenarios, Monte Carlo, extreme scenario testing
+**核心特性**：
+- **实时风险计算**：VaR/CVaR模型，100μs风险评估
+- **多层次限制**：账户、策略、品种三级限制体系
+- **动态调整**：基于波动率、相关性、流动性动态调整
+- **压力测试**：历史情景、蒙特卡洛、极端情景测试
 
-### 6. WebSocket Management Architecture
+### 6. WebSocket管理架构
 
 ```mermaid
 graph TB
-    subgraph "WebSocket Management Architecture"
-        subgraph "Connection Management Layer"
-            CM1[Connection Pool Manager<br/>10K+ connections]
-            CM2[Load Balancer<br/>Intelligent Allocation]
-            CM3[Health Checker<br/>Heartbeat Detection]
-            CM4[Failover Controller<br/>Auto Switch]
+    subgraph "WebSocket管理架构"
+        subgraph "连接管理层"
+            CM1[连接池管理器<br/>10K+ connections]
+            CM2[负载均衡器<br/>智能分配]
+            CM3[健康检查器<br/>心跳检测]
+            CM4[故障转移器<br/>自动切换]
         end
 
-        subgraph "Message Routing System"
-            MR1[Message Distributor<br/>10K+ msg/s]
-            MR2[Subscription Manager<br/>topic-based routing]
-            MR3[Filter Engine<br/>Conditional Filtering]
-            MR4[Priority Queue<br/>QoS Guarantee]
+        subgraph "消息路由系统"
+            MR1[消息分发器<br/>10K+ msg/s]
+            MR2[订阅管理器<br/>topic-based routing]
+            MR3[过滤器引擎<br/>条件过滤]
+            MR4[优先级队列<br/>QoS保证]
         end
 
-        subgraph "Data Processing Layer"
-            DP1[Message Parser<br/>JSON/Binary]
-            DP2[Data Validator<br/>Format Validation]
-            DP3[Transformer<br/>Format Conversion]
-            DP4[Compressor<br/>gzip/deflate]
+        subgraph "数据处理层"
+            DP1[消息解析器<br/>JSON/Binary]
+            DP2[数据验证器<br/>格式校验]
+            DP3[转换器<br/>格式转换]
+            DP4[压缩器<br/>gzip/deflate]
         end
 
-        subgraph "RUST High-Performance Core"
-            RH1[Batch Processor<br/>Batch Message Processing]
-            RH2[Zero-copy Buffer<br/>Ring Buffer]
-            RH3[Parallel Processor<br/>Multi-core Parallel]
-            RH4[Async I/O Processor<br/>Tokio Runtime]
+        subgraph "RUST高性能核心"
+            RH1[批量处理器<br/>批量消息处理]
+            RH2[零拷贝缓冲区<br/>Ring Buffer]
+            RH3[并行处理器<br/>多核并行]
+            RH4[异步I/O处理<br/>Tokio Runtime]
         end
 
-        subgraph "Caching Mechanism"
-            CH1[Message Cache<br/>Recent Message Cache]
-            CH2[Subscription Cache<br/>Subscription Cache]
-            CH3[State Cache<br/>Connection State Cache]
-            CH4[Data Cache<br/>Hot Data Cache]
+        subgraph "缓存机制"
+            CH1[消息缓存器<br/>最近消息缓存]
+            CH2[订阅缓存器<br/>订阅关系缓存]
+            CH3[状态缓存器<br/>连接状态缓存]
+            CH4[数据缓存器<br/>热点数据缓存]
         end
 
-        subgraph "Monitoring & Logging"
-            ML1[Performance Monitor<br/>Latency/Throughput]
-            ML2[Connection Monitor<br/>Connection Status]
-            ML3[Error Monitor<br/>Error Statistics]
-            ML4[Audit Logger<br/>Complete Records]
+        subgraph "监控与日志"
+            ML1[性能监控器<br/>延迟/吞吐量]
+            ML2[连接监控器<br/>连接状态]
+            ML3[错误监控器<br/>错误统计]
+            ML4[审计日志器<br/>完整记录]
         end
 
-        subgraph "Security Layer"
-            SC1[Authentication Manager<br/>JWT/OAuth]
-            SC2[Permission Controller<br/>RBAC]
-            SC3[Encryption Manager<br/>TLS/WSS]
-            SC4[Rate Limiter<br/>Connection Rate Limiting]
+        subgraph "安全层"
+            SC1[认证管理器<br/>JWT/OAuth]
+            SC2[权限控制器<br/>RBAC]
+            SC3[加密管理器<br/>TLS/WSS]
+            SC4[限流器<br/>连接限流]
         end
     end
 
@@ -946,75 +945,75 @@ graph TB
     class ML1,ML2,ML3,ML4,SC1,SC2,SC3,SC4 security
 ```
 
-**Core Features**:
-- **High Concurrency Support**: 10,000+ concurrent connections, < 1ms message latency
-- **Intelligent Routing**: topic-based routing, priority queue, QoS guarantee
-- **RUST Acceleration**: Batch processing, zero-copy buffer, multi-core parallel
-- **Security Guarantee**: JWT authentication, TLS encryption, RBAC permission control
+**核心特性**：
+- **高并发支持**：10,000+并发连接，< 1ms消息延迟
+- **智能路由**：topic-based路由，优先级队列，QoS保证
+- **RUST加速**：批量处理，零拷贝缓冲区，多核并行
+- **安全保障**：JWT认证，TLS加密，RBAC权限控制
 
-### 7. Technical Indicators Architecture
+### 7. 技术指标架构
 
 ```mermaid
 graph TB
-    subgraph "Technical Indicators Architecture"
-        subgraph "Data Input Layer"
-            DI1[Real-time K-line Data<br/>OHLCV]
-            DI2[Historical K-line Data<br/>Batch Loading]
-            DI3[Tick Data<br/>Tick-by-tick Trades]
-            DI4[Auxiliary Data<br/>Volume/Open Interest]
+    subgraph "技术指标架构"
+        subgraph "数据输入层"
+            DI1[实时K线数据<br/>OHLCV]
+            DI2[历史K线数据<br/>批量加载]
+            DI3[Tick数据<br/>逐笔成交]
+            DI4[辅助数据<br/>成交量/持仓量]
         end
 
-        subgraph "RUST Calculation Core"
-            subgraph "SIMD Optimization Engine"
-                SI1[Vectorized Calculator<br/>AVX2/AVX-512]
-                SI2[Batch Processor<br/>10K+ candles/batch]
-                SI3[Parallel Calculator<br/>Rayon Parallel]
-                SI4[Memory Optimizer<br/>Zero-copy Operations]
+        subgraph "RUST计算核心"
+            subgraph "SIMD优化引擎"
+                SI1[向量化计算器<br/>AVX2/AVX-512]
+                SI2[批量处理器<br/>10K+ candles/batch]
+                SI3[并行计算器<br/>Rayon并行]
+                SI4[内存优化器<br/>零拷贝操作]
             end
 
-            subgraph "Indicator Calculators"
-                IC1[Trend Indicators<br/>SMA/EMA/DEMA/TEMA]
-                IC2[Momentum Indicators<br/>RSI/Stoch/CCI/Williams]
-                IC3[Volatility Indicators<br/>BB/ATR/Keltner]
-                IC4[Volume Indicators<br/>OBV/AD/MF/CMF]
+            subgraph "指标计算器"
+                IC1[趋势指标<br/>SMA/EMA/DEMA/TEMA]
+                IC2[动量指标<br/>RSI/Stoch/CCI/Williams]
+                IC3[波动率指标<br/>BB/ATR/Keltner]
+                IC4[成交量指标<br/>OBV/AD/MF/CMF]
             end
 
-            subgraph "Advanced Indicators"
-                AI1[Pattern Recognition<br/>30+ patterns]
-                AI2[Support Resistance<br/>Auto Recognition]
-                AI3[Harmonic Patterns<br/>Gartley/Butterfly]
-                AI4[Multi-timeframe<br/>MTF Analysis]
-            end
-        end
-
-        subgraph "Cache & Optimization"
-            subgraph "Multi-layer Cache"
-                CA1[L1 Cache<br/>Memory Cache]
-                CA2[L2 Cache<br/>Redis Cache]
-                CA3[Pre-calculated Cache<br/>Common Periods]
-                CA4[Incremental Calculation<br/>Differential Update]
-            end
-
-            subgraph "Performance Optimization"
-                PO1[Batch Optimization<br/>Batch Calculation]
-                PO2[Parallel Optimization<br/>Multi-core Utilization]
-                PO3[Memory Optimization<br/>Memory Pool]
-                PO4[Algorithm Optimization<br/>Incremental Algorithm]
+            subgraph "高级指标"
+                AI1[形态识别<br/>30+ patterns]
+                AI2[支撑阻力<br/>自动识别]
+                AI3[谐波模式<br/>Gartley/Butterfly]
+                AI4[多时间框架<br/>MTF分析]
             end
         end
 
-        subgraph "API Interface Layer"
-            API1[Real-time Calculation API<br/>Single Calculation]
-            API2[Batch Calculation API<br/>Batch Processing]
-            API3[Streaming Calculation API<br/>Real-time Stream]
-            API4[Historical Calculation API<br/>Historical Backtest]
+        subgraph "缓存与优化"
+            subgraph "多层缓存"
+                CA1[L1缓存<br/>内存缓存]
+                CA2[L2缓存<br/>Redis缓存]
+                CA3[预计算缓存<br/>常用周期]
+                CA4[增量计算<br/>差分更新]
+            end
+
+            subgraph "性能优化"
+                PO1[批量优化<br/>批量计算]
+                PO2[并行优化<br/>多核利用]
+                PO3[内存优化<br/>内存池]
+                PO4[算法优化<br/>增量算法]
+            end
         end
 
-        subgraph "Monitoring & Diagnostics"
-            MT1[Performance Monitor<br/>Calculation Time]
-            MT2[Cache Monitor<br/>Hit Rate]
-            MT3[Error Monitor<br/>Exception Handling]
-            MT4[Indicator Analyzer<br/>Validity Analysis]
+        subgraph "API接口层"
+            API1[实时计算API<br/>单次计算]
+            API2[批量计算API<br/>批量处理]
+            API3[流式计算API<br/>实时流]
+            API4[历史计算API<br/>历史回测]
+        end
+
+        subgraph "监控与诊断"
+            MT1[性能监控器<br/>计算耗时]
+            MT2[缓存监控器<br/>命中率]
+            MT3[错误监控器<br/>异常处理]
+            MT4[指标分析器<br/>有效性分析]
         end
     end
 
@@ -1064,80 +1063,80 @@ graph TB
     class MT1,MT2,MT3,MT4 monitor
 ```
 
-**Core Features**:
-- **RUST High Performance**: 50,000+ candles/second, 3-5x performance improvement
-- **SIMD Optimization**: AVX2/AVX-512 vectorized computing
-- **50+ Technical Indicators**: Trend, momentum, volatility, volume indicators
-- **Multi-layer Cache**: L1 memory cache, L2 Redis cache, incremental calculation
+**核心特性**：
+- **RUST高性能**：50,000+K线/秒，3-5倍性能提升
+- **SIMD优化**：AVX2/AVX-512向量化计算
+- **50+技术指标**：趋势、动量、波动率、成交量指标
+- **多层缓存**：L1内存缓存，L2 Redis缓存，增量计算
 
-### 8. Configuration Management Architecture
+### 8. 配置管理架构
 
 ```mermaid
 graph TB
-    subgraph "Configuration Management Architecture"
-        subgraph "Configuration Hierarchy"
-            subgraph "Environment Configuration"
-                EV1[Development Environment<br/>development]
-                EV2[Testing Environment<br/>staging]
-                EV3[Production Environment<br/>production]
-                EV4[Backtest Environment<br/>backtest]
+    subgraph "配置管理架构"
+        subgraph "配置层次结构"
+            subgraph "环境配置"
+                EV1[开发环境<br/>development]
+                EV2[测试环境<br/>staging]
+                EV3[生产环境<br/>production]
+                EV4[回测环境<br/>backtest]
             end
 
-            subgraph "Application Configuration"
-                AP1[Basic Configuration<br/>app.yaml]
-                AP2[Trading Configuration<br/>trading.yaml]
-                AP3[Risk Configuration<br/>risk.yaml]
-                AP4[Agent Configuration<br/>agents.yaml]
+            subgraph "应用配置"
+                AP1[基础配置<br/>app.yaml]
+                AP2[交易配置<br/>trading.yaml]
+                AP3[风险配置<br/>risk.yaml]
+                AP4[智能体配置<br/>agents.yaml]
             end
 
-            subgraph "Module Configuration"
-                MO1[Database Configuration<br/>database.yaml]
-                MO2[Redis Configuration<br/>redis.yaml]
-                MO3[LLM Configuration<br/>llm.yaml]
-                MO4[Monitoring Configuration<br/>monitoring.yaml]
+            subgraph "模块配置"
+                MO1[数据库配置<br/>database.yaml]
+                MO2[Redis配置<br/>redis.yaml]
+                MO3[LLM配置<br/>llm.yaml]
+                MO4[监控配置<br/>monitoring.yaml]
             end
         end
 
-        subgraph "Configuration Providers"
-            CP1[File Provider<br/>YAML/JSON]
-            CP2[Environment Variables<br/>ENV Variables]
-            CP3[Database Provider<br/>Dynamic Config]
-            CP4[Remote Configuration Center<br/>Consul/Nacos]
+        subgraph "配置提供者"
+            CP1[文件提供者<br/>YAML/JSON]
+            CP2[环境变量<br/>ENV Variables]
+            CP3[数据库提供者<br/>Dynamic Config]
+            CP4[远程配置中心<br/>Consul/Nacos]
         end
 
-        subgraph "Configuration Management Core"
-            CM1[Configuration Loader<br/>Multi-source Loading]
-            CM2[Configuration Validator<br/>Schema Validation]
-            CM3[Configuration Merger<br/>Hierarchical Merge]
-            CM4[Configuration Parser<br/>Variable Replacement]
+        subgraph "配置管理核心"
+            CM1[配置加载器<br/>多源加载]
+            CM2[配置验证器<br/>Schema验证]
+            CM3[配置合并器<br/>层次合并]
+            CM4[配置解析器<br/>变量替换]
         end
 
-        subgraph "Hot Update Mechanism"
-            HU1[File Monitor<br/>fsnotify]
-            HU2[Change Detector<br/>Difference Comparison]
-            HU3[Hot Updater<br/>Seamless Update]
-            HU4[Rollback Manager<br/>Version Rollback]
+        subgraph "热更新机制"
+            HU1[文件监控器<br/>fsnotify]
+            HU2[变更检测器<br/>差异对比]
+            HU3[热更新器<br/>无缝更新]
+            HU4[回滚管理器<br/>版本回退]
         end
 
-        subgraph "Version Control"
-            VC1[Version Manager<br/>Git-like]
-            VC2[Change History<br/>Audit Log]
-            VC3[Branch Manager<br/>Environment Isolation]
-            VC4[Release Manager<br/>Gray Release]
+        subgraph "版本控制"
+            VC1[版本管理器<br/>Git-like]
+            VC2[变更历史<br/>Audit Log]
+            VC3[分支管理<br/>环境隔离]
+            VC4[发布管理<br/>灰度发布]
         end
 
-        subgraph "Configuration API"
-            API1[Get Configuration<br/>Get Config]
-            API2[Update Configuration<br/>Update Config]
-            API3[Batch Operations<br/>Batch Ops]
-            API4[Query Configuration<br/>Query Config]
+        subgraph "配置API"
+            API1[获取配置<br/>Get Config]
+            API2[更新配置<br/>Update Config]
+            API3[批量操作<br/>Batch Ops]
+            API4[配置查询<br/>Query Config]
         end
 
-        subgraph "Monitoring & Alerting"
-            MG1[Configuration Monitor<br/>Status Monitoring]
-            MG2[Consistency Checker<br/>Multi-node Sync]
-            MG3[Alert Manager<br/>Exception Alerts]
-            MG4[Performance Monitor<br/>Loading Performance]
+        subgraph "监控与告警"
+            MG1[配置监控器<br/>状态监控]
+            MG2[一致性检查器<br/>Multi-node Sync]
+            MG3[告警管理器<br/>异常告警]
+            MG4[性能监控器<br/>加载性能]
         end
     end
 
@@ -1182,97 +1181,97 @@ graph TB
     class API1,API2,API3,API4,MG1,MG2,MG3,MG4 api
 ```
 
-**Core Features**:
-- **Multi-layer Configuration**: Environment, application, module three-tier configuration system
-- **Multi-source Providers**: Files, environment variables, database, remote configuration center
-- **Hot Update Mechanism**: File monitoring, seamless update, version rollback
-- **5ms Fast Update**: Configuration changes effective within 5ms, 100% configuration validation
+**核心特性**：
+- **多层次配置**：环境、应用、模块三层配置体系
+- **多源提供者**：文件、环境变量、数据库、远程配置中心
+- **热更新机制**：文件监控，无缝更新，版本回退
+- **5ms快速更新**：配置变更5ms内生效，100%配置验证
 
-### 9. Database Layer Architecture
+### 9. 数据库层架构
 
 ```mermaid
 graph TB
-    subgraph "Database Layer Architecture"
-        subgraph "Database Cluster"
-            subgraph "PostgreSQL Cluster"
-                PG1[Master Node<br/>Read/Write]
-                PG2[Slave Node 1<br/>Read Only]
-                PG3[Slave Node 2<br/>Read Only]
-                PG4[Backup Node<br/>WAL Archive]
+    subgraph "数据库层架构"
+        subgraph "数据库集群"
+            subgraph "PostgreSQL集群"
+                PG1[主节点<br/>读写]
+                PG2[从节点1<br/>只读]
+                PG3[从节点2<br/>只读]
+                PG4[备份节点<br/>WAL归档]
             end
 
-            subgraph "Redis Cluster"
-                RD1[Master Node<br/>Cache]
-                RD2[Slave Node 1<br/>Cache]
-                RD3[Slave Node 2<br/>Cache]
-                RD4[Sentinel Node<br/>High Availability]
+            subgraph "Redis集群"
+                RD1[Master节点<br/>缓存]
+                RD2[Slave节点1<br/>缓存]
+                RD3[Slave节点2<br/>缓存]
+                RD4[哨兵节点<br/>高可用]
             end
 
-            subgraph "InfluxDB Cluster"
-                ID1[Master Node<br/>Time Series Data]
-                ID2[Slave Node<br/>Replica]
-                ID3[Meta Node<br/>Metadata]
-                ID4[Data Node<br/>Shard]
-            end
-        end
-
-        subgraph "Connection Management Layer"
-            CM1[Connection Pool Manager<br/>Max: 1000]
-            CM2[Load Balancer<br/>Read/Write Separation]
-            CM3[Failover Controller<br/>Auto Switch]
-            CM4[Health Checker<br/>Heartbeat Detection]
-        end
-
-        subgraph "Smart Routing"
-            IR1[Query Router<br/>Intelligent Distribution]
-            IR2[Shard Manager<br/>Data Sharding]
-            IR3[Index Optimizer<br/>Smart Index]
-            IR4[Cache Router<br/>Cache Strategy]
-        end
-
-        subgraph "Transaction Management"
-            TM1[Distributed Transaction<br/>XA Protocol]
-            TM2[Transaction Coordinator<br/>Two-phase Commit]
-            TM3[Lock Manager<br/>Optimistic Lock]
-            TM4[Deadlock Detector<br/>Auto Resolution]
-        end
-
-        subgraph "Data Synchronization"
-            DS1[Real-time Synchronizer<br/>CDC]
-            DS2[Batch Synchronizer<br/>ETL]
-            DS3[Incremental Synchronizer<br/>Change Log]
-            DS4[Consistency Checker<br/>Data Validation]
-        end
-
-        subgraph "Monitoring & Operations"
-            subgraph "Performance Monitoring"
-                PM1[Query Monitor<br/>Slow Queries]
-                PM2[Lock Monitor<br/>Lock Waiting]
-                PM3[Cache Monitor<br/>Hit Rate]
-                PM4[Connection Monitor<br/>Connection Pool]
-            end
-
-            subgraph "Alert System"
-                AL1[Threshold Alert<br/>Performance Threshold]
-                AL2[Exception Alert<br/>Error Rate]
-                AL3[Capacity Alert<br/>Storage Capacity]
-                AL4[Availability Alert<br/>Service Availability]
+            subgraph "InfluxDB集群"
+                ID1[主节点<br/>时序数据]
+                ID2[从节点<br/>副本]
+                ID3[Meta节点<br/>元数据]
+                ID4[数据节点<br/>分片]
             end
         end
 
-        subgraph "Backup & Recovery"
-            subgraph "Backup Strategy"
-                BK1[Full Backup<br/>Daily]
-                BK2[Incremental Backup<br/>Hourly]
-                BK3[WAL Backup<br/>Real-time]
-                BK4[Cross-region Backup<br/>Disaster Recovery]
+        subgraph "连接管理层"
+            CM1[连接池管理器<br/>Max: 1000]
+            CM2[负载均衡器<br/>读写分离]
+            CM3[故障转移器<br/>自动切换]
+            CM4[健康检查器<br/>心跳检测]
+        end
+
+        subgraph "智能路由"
+            IR1[查询路由器<br/>智能分发]
+            IR2[分片管理器<br/>数据分片]
+            IR3[索引优化器<br/>智能索引]
+            IR4[缓存路由器<br/>缓存策略]
+        end
+
+        subgraph "事务管理"
+            TM1[分布式事务<br/>XA协议]
+            TM2[事务协调器<br/>两阶段提交]
+            TM3[锁管理器<br/>乐观锁]
+            TM4[死锁检测器<br/>自动解决]
+        end
+
+        subgraph "数据同步"
+            DS1[实时同步器<br/>CDC]
+            DS2[批量同步器<br/>ETL]
+            DS3[增量同步器<br/>Change Log]
+            DS4[一致性检查器<br/>数据校验]
+        end
+
+        subgraph "监控与运维"
+            subgraph "性能监控"
+                PM1[查询监控器<br/>慢查询]
+                PM2[锁监控器<br/>锁等待]
+                PM3[缓存监控器<br/>命中率]
+                PM4[连接监控器<br/>连接池]
             end
 
-            subgraph "Recovery Mechanism"
-                RC1[Point-in-time Recovery<br/>PITR]
-                RC2[Master-Slave Switch<br/>Failover]
-                RC3[Data Reconstruction<br/>Data Repair]
-                RC4[Disaster Recovery<br/>DRP]
+            subgraph "告警系统"
+                AL1[阈值告警<br/>性能阈值]
+                AL2[异常告警<br/>错误率]
+                AL3[容量告警<br/>存储容量]
+                AL4[可用性告警<br/>服务可用性]
+            end
+        end
+
+        subgraph "备份与恢复"
+            subgraph "备份策略"
+                BK1[全量备份<br/>每日]
+                BK2[增量备份<br/>每小时]
+                BK3[WAL备份<br/>实时]
+                BK4[跨地域备份<br/>异地容灾]
+            end
+
+            subgraph "恢复机制"
+                RC1[时间点恢复<br/>PITR]
+                RC2[主从切换<br/>故障转移]
+                RC3[数据重建<br/>数据修复]
+                RC4[灾难恢复<br/>DRP]
             end
         end
     end
@@ -1325,81 +1324,81 @@ graph TB
     class PM1,PM2,PM3,PM4,AL1,AL2,AL3,AL4,BK1,BK2,BK3,BK4,RC1,RC2,RC3,RC4 monitor
 ```
 
-**Core Features**:
-- **Multi-database Architecture**: PostgreSQL, Redis, InfluxDB clusters
-- **Smart Sharding**: Data sharding, read-write separation, load balancing
-- **Cross-database Transactions**: Distributed transactions, two-phase commit, consistency guarantee
-- **High-performance Access**: 50,000+ QPS, < 10ms response latency
+**核心特性**：
+- **多数据库架构**：PostgreSQL、Redis、InfluxDB集群
+- **智能分片**：数据分片，读写分离，负载均衡
+- **跨数据库事务**：分布式事务，两阶段提交，一致性保证
+- **高性能访问**：50,000+ QPS，< 10ms响应延迟
 
-### 10. API Layer Architecture
+### 10. API层架构
 
 ```mermaid
 graph TB
-    subgraph "API Layer Architecture"
-        subgraph "Access Layer"
-            AL1[Load Balancer<br/>Nginx/HAProxy]
-            AL2[API Gateway<br/>Kong/Istio]
-            AL3[Rate Limiter<br/>Rate Limiter]
-            AL4[Authentication Center<br/>Auth Service]
+    subgraph "API层架构"
+        subgraph "接入层"
+            AL1[负载均衡器<br/>Nginx/HAProxy]
+            AL2[API网关<br/>Kong/Istio]
+            AL3[限流器<br/>Rate Limiter]
+            AL4[认证中心<br/>Auth Service]
         end
 
-        subgraph "Routing Layer"
-            RT1[Path Router<br/>Path Router]
-            RT2[Version Router<br/>Version Router]
-            RT3[Method Router<br/>Method Router]
-            RT4[Parameter Router<br/>Param Router]
+        subgraph "路由层"
+            RT1[路径路由器<br/>Path Router]
+            RT2[版本路由器<br/>Version Router]
+            RT3[方法路由器<br/>Method Router]
+            RT4[参数路由器<br/>Param Router]
         end
 
-        subgraph "FastAPI Service Layer"
-            subgraph "REST API Services"
-                RA1[Market Data API<br/>Market Data]
-                RA2[Trading API<br/>Trading]
-                RA3[Account API<br/>Account]
-                RA4[Analytics API<br/>Analytics]
+        subgraph "FastAPI服务层"
+            subgraph "REST API服务"
+                RA1[市场数据API<br/>Market Data]
+                RA2[交易API<br/>Trading]
+                RA3[账户API<br/>Account]
+                RA4[分析API<br/>Analytics]
             end
 
-            subgraph "WebSocket Services"
-                WS1[Real-time Quotes<br/>Real-time Quotes]
-                WS2[Trade Updates<br/>Trade Updates]
-                WS3[Event Stream<br/>Event Stream]
-                WS4[Admin Panel<br/>Admin Panel]
+            subgraph "WebSocket服务"
+                WS1[实时行情<br/>Real-time Quotes]
+                WS2[交易推送<br/>Trade Updates]
+                WS3[事件通知<br/>Event Stream]
+                WS4[管理界面<br/>Admin Panel]
             end
 
-            subgraph "Middleware Layer"
-                MW1[Authentication Middleware<br/>JWT/OAuth]
-                MW2[Permission Middleware<br/>RBAC]
-                MW3[Logging Middleware<br/>Logging]
-                MW4[Monitoring Middleware<br/>Metrics]
+            subgraph "中间件层"
+                MW1[认证中间件<br/>JWT/OAuth]
+                MW2[权限中间件<br/>RBAC]
+                MW3[日志中间件<br/>Logging]
+                MW4[监控中间件<br/>Metrics]
             end
         end
 
-        subgraph "Business Logic Layer"
-            BL1[Market Data Service<br/>Data Service]
-            BL2[Order Management Service<br/>Order Service]
-            BL3[Risk Management Service<br/>Risk Service]
-            BL4[Analysis Service<br/>Analysis Service]
+        subgraph "业务逻辑层"
+            BL1[市场数据服务<br/>Data Service]
+            BL2[订单管理服务<br/>Order Service]
+            BL3[风险管理服务<br/>Risk Service]
+            BL4[分析服务<br/>Analysis Service]
         end
 
-        subgraph "Data Access Layer"
-            DA1[Cache Accessor<br/>Redis Cache]
-            DA2[Database Accessor<br/>SQL Access]
-            DA3[Time Series Data Accessor<br/>TSDB Access]
-            DA4[File Storage Accessor<br/>File Storage]
+        subgraph "数据访问层"
+            DA1[缓存访问器<br/>Redis Cache]
+            DA2[数据库访问器<br/>SQL Access]
+            DA3[时序数据访问器<br/>TSDB Access]
+            DA4[文件存储访问器<br/>File Storage]
         end
 
-        subgraph "Monitoring & Operations"
-            subgraph "Performance Monitoring"
-                PF1[Response Time Monitor<br/>Response Time]
-                PF2[Throughput Monitor<br/>Throughput]
-                PF3[Error Rate Monitor<br/>Error Rate]
-                PF4[Resource Usage Monitor<br/>Resource Usage]
+        subgraph "监控与运维"
+            subgraph "性能监控"
+                PF1[响应时间监控<br/>Response Time]
+                PF2[吞吐量监控<br/>Throughput]
+                PF3[错误率监控<br/>Error Rate]
+                PF4[资源使用监控<br/>Resource Usage]
             end
 
-            subgraph "Distributed Tracing"
-                TR1[Request Trace<br/>Request Trace]
-                TR2[Dependency Trace<br/>Dependency Trace]
-                TR3[Performance Profile<br/>Performance Profile]
-                TR4[Bottleneck Analysis<br/>Bottleneck Analysis]
+            subgraph "链路追踪"
+                TR1[请求追踪<br/>Request Trace]
+                TR2[依赖追踪<br/>Dependency Trace]
+                TR3[性能分析<br/>Performance Profile]
+                TR4[瓶颈分析<br/>Bottleneck Analysis]
             end
         end
     end
@@ -1452,17 +1451,17 @@ graph TB
     class PF1,PF2,PF3,PF4,TR1,TR2,TR3,TR4 monitor
 ```
 
-**Core Features**:
-- **High-performance API**: 10,000+ QPS, < 100ms response time
-- **RESTful & WebSocket**: Complete REST API and real-time WebSocket services
-- **Authentication & Authorization**: JWT/OAuth authentication, RBAC permission control
-- **Full-chain Monitoring**: Request tracing, performance analysis, bottleneck identification
+**核心特性**：
+- **高性能API**：10,000+ QPS，< 100ms响应时间
+- **RESTful与WebSocket**：完整的REST API和实时WebSocket服务
+- **认证与授权**：JWT/OAuth认证，RBAC权限控制
+- **全链路监控**：请求追踪，性能分析，瓶颈识别
 
-For detailed documentation of all architecture diagrams, please visit [docs/modules](./docs/modules) directory.
+所有架构图的详细文档可在 [docs/modules](./docs/modules) 目录下查看。
 
-## 🚀 Deployment Architecture
+## 🚀 部署架构
 
-### Production Environment Architecture
+### 生产环境架构
 
 ```mermaid
 graph TB
@@ -1512,75 +1511,75 @@ graph TB
     GRAF --> PROM
 ```
 
-### Deployment Options
+### 部署选项
 
-#### Docker Compose (Quick Start)
+#### Docker Compose（快速开始）
 
 ```bash
-# Clone project
+# 克隆项目
 git clone https://github.com/zcxGGmu/DeepAlpha.git
 cd DeepAlpha
 
-# Start all services
+# 启动所有服务
 docker-compose up -d
 
-# Check service status
+# 查看服务状态
 docker-compose ps
 
-# View logs
+# 查看日志
 docker-compose logs -f deepalpha
 ```
 
-#### Kubernetes (Production)
+#### Kubernetes（生产环境）
 
 ```bash
-# Create namespace
+# 创建命名空间
 kubectl create namespace deepalpha
 
-# Deploy application
+# 部署应用
 kubectl apply -f k8s/
 
-# Check deployment status
+# 检查部署状态
 kubectl get pods -n deepalpha
 ```
 
-### Monitoring and Observability
+### 监控和可观测性
 
-- **Prometheus**: Metrics collection
-- **Grafana**: Visualization dashboard
-- **Jaeger**: Distributed tracing
-- **ELK Stack**: Log aggregation and analysis
+- **Prometheus**: 指标收集
+- **Grafana**: 可视化仪表板
+- **Jaeger**: 分布式链路追踪
+- **ELK Stack**: 日志聚合分析
 
-Access monitoring dashboards:
+访问监控面板：
 - Grafana: `http://your-domain:3000`
 - Prometheus: `http://your-domain:9090`
 - Jaeger: `http://your-domain:16686`
 
-### Detailed Deployment Documentation
+### 详细部署文档
 
-For complete deployment guide, please refer to: [Deployment Architecture](./docs/deployment-architecture.md)
+完整的部署指南请参考：[Deployment Architecture](./docs/deployment-architecture.md)
 
-Including:
-- Production environment deployment architecture
-- Kubernetes configuration manifests
-- Docker Compose configuration
-- Monitoring configuration
-- Performance tuning recommendations
-- Security configuration
-- Disaster recovery plan
+包含内容：
+- 生产环境部署架构
+- Kubernetes配置清单
+- Docker Compose配置
+- 监控配置
+- 性能调优建议
+- 安全配置
+- 灾难恢复方案
 
-## 💡 Usage Examples
+## 💡 使用示例
 
-### Using Rust Performance Modules
+### 使用Rust性能模块
 
 ```python
-# Import Rust performance modules
+# 导入Rust性能模块
 from deepalpha_rust import TechnicalIndicators, WebSocketManager, ExecutionEngine
 
-# 1. High-performance technical indicator calculation
+# 1. 高性能技术指标计算
 indicators = TechnicalIndicators()
 
-# Batch calculate indicators (ultra-high performance)
+# 批量计算指标（超高性能）
 prices = [45000, 45100, 45200, 45300, 45400, 45300, 45200]
 sma_20 = indicators.calculate_sma(prices, period=20)
 ema_12 = indicators.calculate_ema(prices, period=12)
@@ -1589,22 +1588,22 @@ macd = indicators.calculate_macd(prices)
 
 print(f"SMA20: {sma_20}, RSI14: {rsi}")
 
-# 2. WebSocket connection management
+# 2. WebSocket连接管理
 ws_manager = WebSocketManager()
 ws_manager.start()
 
-# Batch add connections (supports 10,000+ concurrent)
+# 批量添加连接（支持10,000+并发）
 for i in range(100):
     ws_manager.add_connection(f"conn_{i}", "wss://stream.binance.com/ws/btcusdt@trade")
 
-# Broadcast message (< 1ms latency)
+# 广播消息（< 1ms延迟）
 ws_manager.broadcast("market_update", {"symbol": "BTC/USDT", "price": 50000})
 
-# 3. Ultra-low latency trading execution
+# 3. 超低延迟交易执行
 engine = ExecutionEngine()
 engine.start()
 
-# Submit order (average latency < 50μs)
+# 提交订单（平均延迟 < 50μs）
 order_data = {
     "symbol": "BTC/USDT",
     "side": "buy",
@@ -1613,55 +1612,55 @@ order_data = {
 }
 order_id = engine.submit_order(order_data)
 
-# Get execution statistics
+# 获取执行统计
 stats = engine.get_stats()
-print(f"Total orders: {stats.total_orders}")
-print(f"Average execution time: {stats.avg_execution_time_us} μs")
+print(f"总订单数: {stats.total_orders}")
+print(f"平均执行时间: {stats.avg_execution_time_us} μs")
 ```
 
-### Creating Trading Strategies
+### 创建交易策略
 
 ```python
 from deepalpha import DeepAlphaEngine
 from deepalpha.config import Settings
 
-# Load configuration
+# 加载配置
 settings = Settings.from_file("config/development.yaml")
 
-# Create trading engine
+# 创建交易引擎
 engine = DeepAlphaEngine(settings)
 
-# Add trading pairs
+# 添加交易对
 engine.add_symbol("BTC/USDT")
 engine.add_symbol("ETH/USDT")
 
-# Start trading
+# 启动交易
 await engine.start()
 ```
 
-### Custom Agents
+### 自定义智能体
 
 ```python
 from deepalpha.agents import BaseAgent
 from deepalpha.core import Signal
-from deepalpha_rust import TechnicalIndicators  # Use Rust acceleration
+from deepalpha_rust import TechnicalIndicators  # 使用Rust加速
 
 class CustomAgent(BaseAgent):
-    """Custom agent example (with Rust acceleration)"""
+    """自定义智能体示例（使用Rust加速）"""
 
     def __init__(self):
         super().__init__()
-        self.indicators = TechnicalIndicators()  # Rust-accelerated indicator calculation
+        self.indicators = TechnicalIndicators()  # Rust加速的指标计算
 
     async def analyze(self, symbol: str, timeframe: str) -> Signal:
-        # Get market data
+        # 获取市场数据
         data = await self.get_market_data(symbol, timeframe)
 
-        # Use Rust-accelerated indicator calculation
+        # 使用Rust加速的指标计算
         rsi = self.indicators.calculate_rsi(data['close'], period=14)
         macd = self.indicators.calculate_macd(data['close'])
 
-        # Custom analysis logic
+        # 自定义分析逻辑
         if rsi < 30 and macd['histogram'] > 0:
             return Signal.buy(confidence=0.8)
         elif rsi > 70 and macd['histogram'] < 0:
@@ -1670,7 +1669,7 @@ class CustomAgent(BaseAgent):
         return Signal.hold()
 ```
 
-### Configuring LLM Providers
+### 配置LLM Provider
 
 ```yaml
 # config/default.yaml
@@ -1690,7 +1689,7 @@ llm_providers:
     model: "deepseek-chat"
     weight: 0.3
 
-# Rust performance module configuration
+# Rust性能模块配置
 rust_modules:
   indicators:
     enabled: true
@@ -1708,31 +1707,31 @@ rust_modules:
     risk_check_interval: 1
 ```
 
-## 📊 Monitoring Dashboard
+## 📊 监控界面
 
-The system provides a complete web monitoring interface:
+系统提供完整的Web监控界面：
 
-- **Real-time Quotes Panel**: Display real-time prices and indicators for watched trading pairs
-- **Trading History**: View all trading records and performance
-- **Agent Status**: Monitor analysis results of each agent
-- **Risk Monitoring**: Display real-time account risk metrics
-- **Performance Monitoring**: Rust module performance metrics (latency, throughput, etc.)
-- **Decision Logs**: View AI decision process and reasoning
+- **实时行情面板**: 显示关注的交易对实时价格和指标
+- **交易历史**: 查看所有交易记录和绩效
+- **智能体状态**: 监控各智能体的分析结果
+- **风险监控**: 实时显示账户风险指标
+- **性能监控**: Rust模块性能指标（延迟、吞吐量等）
+- **决策日志**: 查看AI决策过程和理由
 
-Visit `http://localhost:8000` to access the monitoring interface.
+访问 `http://localhost:8000` 进入监控界面。
 
-## 🧪 Testing
+## 🧪 测试
 
-### Run All Tests
+### 运行所有测试
 
 ```bash
-# Python tests
+# Python测试
 pytest
 
-# Rust module tests
+# Rust模块测试
 cd rust && cargo test
 
-# Performance benchmark tests
+# 性能基准测试
 cd rust/tests
 python test_indicators_performance.py
 python test_websocket_performance.py
@@ -1740,68 +1739,68 @@ python test_stream_performance.py
 python test_executor_performance.py
 ```
 
-### Run Specific Tests
+### 运行特定测试
 
 ```bash
-# Python unit tests
+# Python单元测试
 pytest tests/unit/test_agents.py
 pytest tests/integration/test_engine.py
 
-# Rust module examples
+# Rust模块示例
 python rust/examples/executor_examples.py
 python rust/examples/websocket_examples.py
 python rust/examples/indicators_examples.py
 python rust/examples/stream_examples.py
 ```
 
-### Check Test Coverage
+### 查看测试覆盖率
 
 ```bash
 pytest --cov=deepalpha --cov-report=html
 ```
 
-## 📚 API Documentation
+## 📚 API文档
 
-After starting the service, visit the following URLs to view API documentation:
+启动服务后，访问以下地址查看API文档：
 
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
-### Main API Endpoints
+### 主要API端点
 
-- `GET /api/v1/health` - Health check
-- `GET /api/v1/symbols` - Get supported trading pairs
-- `POST /api/v1/trade` - Manual order placement
-- `GET /api/v1/positions` - Get position information
-- `GET /api/v1/decisions` - Get decision history
-- `GET /api/v1/performance` - Get performance metrics
+- `GET /api/v1/health` - 健康检查
+- `GET /api/v1/symbols` - 获取支持的交易对
+- `POST /api/v1/trade` - 手动下单
+- `GET /api/v1/positions` - 获取持仓信息
+- `GET /api/v1/decisions` - 获取决策历史
+- `GET /api/v1/performance` - 获取性能指标
 
-## 🔧 Configuration
+## 🔧 配置说明
 
-### Main Configuration Items
+### 主要配置项
 
 ```yaml
-# Application configuration
+# 应用配置
 app:
   name: "DeepAlpha"
   version: "1.0.0"
   debug: false
 
-# Exchange configuration
+# 交易所配置
 exchange:
   name: "binance"
   api_key: ${BINANCE_API_KEY}
   api_secret: ${BINANCE_API_SECRET}
   sandbox: false
 
-# Trading parameters
+# 交易参数
 trading:
-  max_position_size: 0.02  # Maximum position 2%
-  stop_loss: 0.02  # 2% stop loss
-  take_profit: 0.06  # 6% take profit
-  max_drawdown: 0.10  # Maximum drawdown 10%
+  max_position_size: 0.02  # 最大仓位2%
+  stop_loss: 0.02  # 2%止损
+  take_profit: 0.06  # 6%止盈
+  max_drawdown: 0.10  # 最大回撤10%
 
-# Agent configuration
+# 智能体配置
 agents:
   technical:
     enabled: true
@@ -1816,13 +1815,13 @@ agents:
     enabled: true
     max_position_per_symbol: 0.05
 
-# Decision engine
+# 决策引擎
 decision:
   min_confidence: 0.7
-  cache_duration: 300  # 5 minutes
+  cache_duration: 300  # 5分钟
   memory_size: 100
 
-# Rust performance module configuration
+# Rust性能模块配置
 rust:
   indicators:
     enabled: true
@@ -1840,94 +1839,94 @@ rust:
     risk_check_batch_size: 100
 ```
 
-## 🚀 Performance Optimization
+## 🚀 性能优化
 
-### System Tuning Recommendations
+### 系统调优建议
 
-1. **Rust Performance Module Optimization**
-   - Enable all Rust modules for maximum performance improvement
-   - Adjust parallel worker count based on hardware
-   - Use larger batch sizes for improved throughput
+1. **Rust性能模块优化**
+   - 启用所有Rust模块以获得最大性能提升
+   - 根据硬件调整并行worker数量
+   - 使用更大的批处理大小提高吞吐量
 
-2. **Database Optimization**
-   - Use connection pooling
-   - Set up indexes appropriately
-   - Clean up historical data regularly
+2. **数据库优化**
+   - 使用连接池
+   - 合理设置索引
+   - 定期清理历史数据
 
-3. **Caching Strategy**
-   - Redis cache hot data
-   - Local cache calculation results
-   - Use CDN for static resource acceleration
+3. **缓存策略**
+   - Redis缓存热点数据
+   - 本地缓存计算结果
+   - 使用CDN加速静态资源
 
-4. **Concurrency Optimization**
-   - Set reasonable coroutine count
-   - Use async I/O
-   - Batch process data
+4. **并发优化**
+   - 合理设置协程数量
+   - 使用异步IO
+   - 批量处理数据
 
-5. **Monitoring Metrics**
-   - CPU usage < 80%
-   - Memory usage < 70%
-   - API response time < 100ms
-   - Rust module latency monitoring
+5. **监控指标**
+   - CPU使用率 < 80%
+   - 内存使用率 < 70%
+   - API响应时间 < 100ms
+   - Rust模块延迟监控
 
-## 🛡️ Security
+## 🛡️ 安全说明
 
-### Best Practices
+### 最佳实践
 
-1. **API Key Management**
-   - Use environment variables to store keys
-   - Rotate API keys regularly
-   - Limit API permissions
+1. **API密钥管理**
+   - 使用环境变量存储密钥
+   - 定期轮换API密钥
+   - 限制API权限
 
-2. **Network Security**
-   - Use HTTPS/WSS
-   - Set up firewall rules
-   - Enable API access restrictions
+2. **网络安全**
+   - 使用HTTPS/WSS
+   - 设置防火墙规则
+   - 启用API访问限制
 
-3. **Fund Security**
-   - Use API trading permissions, disable withdrawals
-   - Set reasonable trading limits
-   - Check trading records regularly
+3. **资金安全**
+   - 使用API交易权限，禁用提现
+   - 设置合理的交易限额
+   - 定期检查交易记录
 
-## 🤝 Contributing
+## 🤝 贡献指南
 
-Contributions are welcome! Please follow these steps:
+欢迎贡献代码！请遵循以下步骤：
 
-1. Fork the project
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Create a Pull Request
+1. Fork项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建Pull Request
 
-### Development Standards
+### 开发规范
 
-- Follow PEP 8 coding standards
-- Rust code follows rustfmt standards
-- Write unit tests
-- Update documentation
-- Use conventional commit format for commit messages
+- 遵循PEP 8编码规范
+- Rust代码遵循rustfmt标准
+- 编写单元测试
+- 更新文档
+- 提交信息使用约定式提交格式
 
-## 📄 License
+## 📄 许可证
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
-## 🙏 Acknowledgments
+## 🙏 致谢
 
-- [Binance](https://binance.com) - Excellent trading API
-- [FastAPI](https://fastapi.tiangolo.com) - High-performance web framework
-- [PyO3](https://pyo3.rs) - Bridge between Rust and Python
-- [Tokio](https://tokio.rs) - Rust async runtime
-- [OpenAI](https://openai.com) - Powerful AI capabilities
+- [Binance](https://binance.com) - 提供优秀的交易API
+- [FastAPI](https://fastapi.tiangolo.com) - 高性能的Web框架
+- [PyO3](https://pyo3.rs) - Rust与Python的桥梁
+- [Tokio](https://tokio.rs) - Rust异步运行时
+- [OpenAI](https://openai.com) - 强大的AI能力
 
-## 📞 Contact
+## 📞 联系我们
 
-- Project homepage: [https://github.com/zcxGGmu/DeepAlpha](https://github.com/zcxGGmu/DeepAlpha)
-- Issue feedback: [Issues](https://github.com/zcxGGmu/DeepAlpha/issues)
-- Email: deepalpha@example.com
+- 项目主页: [https://github.com/zcxGGmu/DeepAlpha](https://github.com/zcxGGmu/DeepAlpha)
+- 问题反馈: [Issues](https://github.com/zcxGGmu/DeepAlpha/issues)
+- 邮箱: deepalpha@example.com
 
-## ⚠️ Disclaimer
+## ⚠️ 免责声明
 
-This software is for learning and research purposes only. Quantitative trading involves risks, and using this software for actual trading may result in financial losses. Users need to bear all trading risks themselves, and developers are not responsible for any trading losses. Before using, please ensure you fully understand the associated risks and seek professional advice if necessary.
+本软件仅供学习和研究使用。量化交易存在风险，使用本软件进行实际交易可能导致资金损失。用户需要自行承担所有交易风险，开发者不对任何交易损失负责。在使用前，请确保您充分理解相关风险，并在必要时寻求专业建议。
 
 ---
 
