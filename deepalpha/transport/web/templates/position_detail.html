@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>持仓详情 - DeepAlpha</title>
+    <link rel="stylesheet" href="/static/css/notion.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="app" class="notion-page">
+        <!-- 导航 -->
+        <nav class="notion-nav">
+            <a href="/desk" class="notion-nav-item">工作台</a>
+            <a href="/decisions" class="notion-nav-item">蓝皮书</a>
+            <a href="/positions" class="notion-nav-item active">红皮书</a>
+            <a href="/monitoring" class="notion-nav-item">监控</a>
+        </nav>
+
+        <!-- 返回按钮 -->
+        <div class="back-button" style="margin-bottom: 1rem;">
+            <a href="/positions" class="notion-button notion-button-ghost">
+                ← 返回持仓列表
+            </a>
+        </div>
+
+        <!-- 持仓详情 -->
+        <div v-if="position" class="position-detail">
+            <!-- 基本信息卡片 -->
+            <div class="detail-header notion-card notion-fade-in">
+                <div class="header-top">
+                    <div class="position-title">
+                        <h1>{{ position.symbol }}</h1>
+                        <span class="side" :class="position.side">
+                            {{ position.side === 'long' ? '多头' : '空头' }}
+                        </span>
+                    </div>
+                    <div class="position-meta">
+                        <div>持仓ID: <code>{{ position.id }}</code></div>
+                        <div>开仓时间: {{ formatDateTime(position.open_time) }}</div>
+                    </div>
+                </div>
+
+                <!-- 盈亏信息 -->
+                <div class="pnl-summary">
+                    <div class="pnl-item">
+                        <label>未实现盈亏</label>
+                        <div class="value" :class="position.unrealized_pnl >= 0 ? 'positive' : 'negative'">
+                            {{ formatCurrency(position.unrealized_pnl) }}
+                        </div>
+                    </div>
+                    <div class="pnl-item">
+                        <label>收益率</label>
+                        <div class="value" :class="position.unrealized_percent >= 0 ? 'positive' : 'negative'">
+                            {{ position.unrealized_percent >= 0 ? '+' : '' }}{{ position.unrealized_percent.toFixed(2) }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 详细指标 -->
+            <div class="detail-grid notion-fade-in">
+                <!-- 仓位信息 -->
+                <div class="notion-card">
+                    <h2>仓位信息</h2>
+                    <div class="param-grid">
+                        <div class="param">
+                            <label>仓位大小</label>
+                            <div class="value">{{ position.size }} {{ position.symbol.split('/')[1] }}</div>
+                        </div>
+                        <div class="param">
+                            <label>杠杆</label>
+                            <div class="value">{{ position.leverage }}x</div>
+                        </div>
+                        <div class="param">
+                            <label>保证金</label>
+                            <div class="value">{{ formatCurrency(position.margin) }}</div>
+                        </div>
+                        <div class="param">
+                            <label>保证金率</label>
+                            <div class="value" :class="getMarginClass(position.margin_ratio)">
+                                {{ (position.margin_ratio * 100).toFixed(2) }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 价格信息 -->
+                <div class="notion-card">
+                    <h2>价格信息</h2>
+                    <div class="param-grid">
+                        <div class="param">
+                            <label>开仓价格</label>
+                            <div class="value">{{ formatPrice(position.entry_price) }}</div>
+                        </div>
+                        <div class="param">
+                            <label>标记价格</label>
+                            <div class="value">{{ formatPrice(position.mark_price) }}</div>
+                        </div>
+                        <div class="param">
+                            <label>强平价格</label>
+                            <div class="value danger">{{ formatPrice(position.liquidation_price) }}</div>
+                        </div>
+                        <div class="param">
+                            <label>止损价格</label>
+                            <div class="value">{{ formatPrice(position.stop_loss) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 层级管理 -->
+            <div v-if="position.tiers && position.tiers.length" class="tiers-section notion-card notion-fade-in">
+                <h2>层级止盈管理</h2>
+                <div class="tiers-visual">
+                    <div
+                        v-for="(tier, index) in position.tiers"
+                        :key="index"
+                        class="tier-item"
+                        :class="{
+                            done: tier.done,
+                            current: isCurrentTier(tier, index)
+                        }"
+                    >
+                        <div class="tier-header">
+                            <div class="tier-number">第 {{ index + 1 }} 层</div>
+                            <div class="tier-status">
+                                <span v-if="tier.done" class="notion-badge notion-badge-success">已执行</span>
+                                <span v-else-if="isCurrentTier(tier, index)" class="notion-badge notion-badge-warning">当前</span>
+                                <span v-else class="notion-badge notion-badge-default">等待</span>
+                            </div>
+                        </div>
+                        <div class="tier-target">
+                            <label>目标价格</label>
+                            <div class="value">{{ formatPrice(tier.target_price) }}</div>
+                        </div>
+                        <div class="tier-ratio">
+                            <label>平仓比例</label>
+                            <div class="value">{{ (tier.ratio * 100).toFixed(0) }}%</div>
+                        </div>
+                        <div class="tier-progress" v-if="!tier.done">
+                            <label>距离目标</label>
+                            <div class="progress-bar">
+                                <div
+                                    class="progress-fill"
+                                    :style="{ width: calculateTierProgress(tier) + '%' }"
+                                ></div>
+                            </div>
+                            <div class="progress-text">
+                                {{ calculateTierProgress(tier).toFixed(1) }}%
+                            </div>
+                        </div>
+                        <div class="tier-execute-time" v-if="tier.executed_at">
+                            <label>执行时间</label>
+                            <div class="value">{{ formatDateTime(tier.executed_at) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="tier-actions" v-if="hasPendingTiers">
+                    <button @click="adjustTiers" class="notion-button notion-button-primary">
+                        调整层级
+                    </button>
+                    <button @click="closePosition" class="notion-button notion-button-secondary">
+                        全部平仓
+                    </button>
+                </div>
+            </div>
+
+            <!-- 价格走势图 -->
+            <div class="chart-section notion-card notion-fade-in">
+                <h2>价格走势与盈亏</h2>
+                <div class="chart-controls">
+                    <select v-model="chartTimeframe" @change="updateChart" class="notion-input">
+                        <option value="1m">1分钟</option>
+                        <option value="5m">5分钟</option>
+                        <option value="15m">15分钟</option>
+                        <option value="1h">1小时</option>
+                        <option value="4h">4小时</option>
+                        <option value="1d">日线</option>
+                    </select>
+                </div>
+                <div id="price-chart"></div>
+            </div>
+
+            <!-- 历史订单 -->
+            <div class="orders-section notion-card notion-fade-in">
+                <h2>交易历史</h2>
+                <div class="orders-table">
+                    <table class="notion-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>类型</th>
+                                <th>方向</th>
+                                <th>数量</th>
+                                <th>价格</th>
+                                <th>成交金额</th>
+                                <th>手续费</th>
+                                <th>盈亏</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="trade in position.trades" :key="trade.id">
+                                <td>{{ formatDateTime(trade.time) }}</td>
+                                <td>{{ trade.type }}</td>
+                                <td>
+                                    <span class="side" :class="trade.side">
+                                        {{ trade.side === 'buy' ? '买入' : '卖出' }}
+                                    </span>
+                                </td>
+                                <td>{{ trade.amount }}</td>
+                                <td>{{ formatPrice(trade.price) }}</td>
+                                <td>{{ formatCurrency(trade.value) }}</td>
+                                <td>{{ formatCurrency(trade.fee) }}</td>
+                                <td :class="trade.pnl >= 0 ? 'positive' : 'negative'">
+                                    {{ trade.pnl ? formatCurrency(trade.pnl) : '-' }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 风险分析 -->
+            <div class="risk-analysis notion-card notion-fade-in">
+                <h2>风险分析</h2>
+                <div class="risk-metrics">
+                    <div class="risk-item">
+                        <div class="risk-label">
+                            <span>价格距离强平</span>
+                            <div class="risk-hint" data-tooltip="当前价格距离强平价格的百分比">
+                                <i>ⓘ</i>
+                            </div>
+                        </div>
+                        <div class="risk-value" :class="getLiquidationRiskClass()">
+                            {{ calculateLiquidationDistance() }}%
+                        </div>
+                        <div class="risk-bar">
+                            <div
+                                class="risk-fill"
+                                :class="getLiquidationRiskClass()"
+                                :style="{ width: calculateLiquidationDistance() + '%' }"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <div class="risk-item">
+                        <div class="risk-label">
+                            <span>仓位风险等级</span>
+                            <div class="risk-hint" data-tooltip="基于仓位大小和杠杆的风险评级">
+                                <i>ⓘ</i>
+                            </div>
+                        </div>
+                        <div class="risk-value" :class="getPositionRiskClass()">
+                            {{ getPositionRiskLevel() }}
+                        </div>
+                    </div>
+
+                    <div class="risk-item">
+                        <div class="risk-label">
+                            <span>最大回撤</span>
+                            <div class="risk-hint" data-tooltip="持仓以来的最大亏损百分比">
+                                <i>ⓘ</i>
+                            </div>
+                        </div>
+                        <div class="risk-value negative">
+                            {{ position.max_drawdown ? position.max_drawdown.toFixed(2) + '%' : 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="risk-recommendations" v-if="riskRecommendations.length">
+                    <h3>风险提示</h3>
+                    <div class="recommendations">
+                        <div
+                            v-for="(rec, index) in riskRecommendations"
+                            :key="index"
+                            class="notion-callout"
+                            :class="rec.type"
+                        >
+                            {{ rec.message }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div v-else class="loading">
+            <div class="notion-spinner"></div>
+            <p>加载持仓详情中...</p>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    positionId: null,
+                    position: null,
+                    chartTimeframe: '1h',
+                    riskRecommendations: []
+                };
+            },
+            methods: {
+                async loadPosition() {
+                    try {
+                        const response = await fetch(`/api/live/positions/${this.positionId}`);
+                        const data = await response.json();
+                        this.position = data.position;
+
+                        // 渲染图表
+                        this.renderChart();
+
+                        // 分析风险
+                        this.analyzeRisk();
+                    } catch (error) {
+                        console.error('加载持仓失败:', error);
+                    }
+                },
+                renderChart() {
+                    // 模拟数据，实际应从API获取
+                    const prices = Array.from({ length: 100 }, (_, i) => {
+                        const base = this.position.entry_price;
+                        const variation = Math.sin(i * 0.1) * 0.02 * base;
+                        return base + variation;
+                    });
+
+                    const trace = {
+                        x: Array.from({ length: 100 }, (_, i) => i),
+                        y: prices,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: '价格',
+                        line: { color: '#1971c2' }
+                    };
+
+                    // 添加开仓价格线
+                    const entryLine = {
+                        x: [0, 99],
+                        y: [this.position.entry_price, this.position.entry_price],
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: '开仓价',
+                        line: { color: '#f08c00', dash: 'dash' }
+                    };
+
+                    // 添加强平价格线
+                    const liquidationLine = {
+                        x: [0, 99],
+                        y: [this.position.liquidation_price, this.position.liquidation_price],
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: '强平价',
+                        line: { color: '#e03131', dash: 'dash' }
+                    };
+
+                    const layout = {
+                        title: `${this.position.symbol} 价格走势`,
+                        xaxis: { title: '时间' },
+                        yaxis: { title: '价格' },
+                        paper_bgcolor: 'var(--notion-background)',
+                        plot_bgcolor: 'var(--notion-background)',
+                        font: { color: 'var(--notion-text)' },
+                        showlegend: true
+                    };
+
+                    Plotly.newPlot('price-chart', [trace, entryLine, liquidationLine], layout);
+                },
+                updateChart() {
+                    this.renderChart();
+                },
+                analyzeRisk() {
+                    this.riskRecommendations = [];
+
+                    // 检查强平风险
+                    const liquidationDistance = this.calculateLiquidationDistance();
+                    if (liquidationDistance < 10) {
+                        this.riskRecommendations.push({
+                            type: 'notion-callout-danger',
+                            message: '⚠️ 距离强平价格过近，建议立即减仓或追加保证金'
+                        });
+                    } else if (liquidationDistance < 20) {
+                        this.riskRecommendations.push({
+                            type: 'notion-callout-warning',
+                            message: '⚠️ 价格接近强平价格，请注意风险控制'
+                        });
+                    }
+
+                    // 检查仓位大小
+                    const positionRisk = this.getPositionRiskLevel();
+                    if (positionRisk === '高风险') {
+                        this.riskRecommendations.push({
+                            type: 'notion-callout-warning',
+                            message: '⚠️ 仓位过大，建议降低仓位或杠杆'
+                        });
+                    }
+
+                    // 检查未实现亏损
+                    if (this.position.unrealized_percent < -10) {
+                        this.riskRecommendations.push({
+                            type: 'notion-callout-info',
+                            message: '💡 当前浮亏较大，考虑是否需要止损'
+                        });
+                    }
+                },
+                calculateLiquidationDistance() {
+                    const current = this.position.mark_price;
+                    const liquidation = this.position.liquidation_price;
+                    const entry = this.position.entry_price;
+
+                    if (this.position.side === 'long') {
+                        return ((current - liquidation) / (entry - liquidation) * 100);
+                    } else {
+                        return ((liquidation - current) / (liquidation - entry) * 100);
+                    }
+                },
+                getLiquidationRiskClass() {
+                    const distance = this.calculateLiquidationDistance();
+                    if (distance < 10) return 'danger';
+                    if (distance < 30) return 'warning';
+                    return 'safe';
+                },
+                getPositionRiskLevel() {
+                    const leverage = this.position.leverage;
+                    const marginRatio = this.position.margin_ratio;
+
+                    if (leverage >= 10 || marginRatio < 0.1) return '高风险';
+                    if (leverage >= 5 || marginRatio < 0.2) return '中风险';
+                    return '低风险';
+                },
+                getPositionRiskClass() {
+                    const level = this.getPositionRiskLevel();
+                    if (level === '高风险') return 'danger';
+                    if (level === '中风险') return 'warning';
+                    return 'safe';
+                },
+                isCurrentTier(tier, index) {
+                    if (tier.done) return false;
+                    if (index === 0) return true;
+
+                    // 检查上一层是否已执行
+                    const previousTier = this.position.tiers[index - 1];
+                    return previousTier && previousTier.done;
+                },
+                hasPendingTiers() {
+                    return this.position.tiers && this.position.tiers.some(t => !t.done);
+                },
+                calculateTierProgress(tier) {
+                    const entry = this.position.entry_price;
+                    const current = this.position.mark_price;
+                    const target = tier.target_price;
+
+                    if (this.position.side === 'long') {
+                        return Math.max(0, Math.min(100, ((current - entry) / (target - entry)) * 100));
+                    } else {
+                        return Math.max(0, Math.min(100, ((entry - current) / (entry - target)) * 100));
+                    }
+                },
+                formatCurrency(value) {
+                    return new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                    }).format(value);
+                },
+                formatPrice(value) {
+                    return new Intl.NumberFormat('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 6
+                    }).format(value);
+                },
+                formatDateTime(dateStr) {
+                    return new Date(dateStr).toLocaleString('zh-CN');
+                },
+                getMarginClass(ratio) {
+                    if (ratio < 0.1) return 'danger';
+                    if (ratio < 0.3) return 'warning';
+                    return 'safe';
+                },
+                adjustTiers() {
+                    // 实现调整层级逻辑
+                    alert('调整层级功能待实现');
+                },
+                closePosition() {
+                    // 实现全部平仓逻辑
+                    if (confirm('确定要全部平仓吗？')) {
+                        alert('平仓功能待实现');
+                    }
+                }
+            },
+            mounted() {
+                // 从URL获取持仓ID
+                const pathParts = window.location.pathname.split('/');
+                this.positionId = pathParts[pathParts.length - 1];
+
+                if (this.positionId) {
+                    this.loadPosition();
+                }
+            }
+        }).mount('#app');
+    </script>
+
+    <style>
+        .position-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .detail-header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .position-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .position-title h1 {
+            margin: 0;
+        }
+
+        .position-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            color: var(--notion-text-light);
+            font-size: 0.875rem;
+        }
+
+        .pnl-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: var(--notion-background-gray);
+            border-radius: 0.375rem;
+        }
+
+        .pnl-item {
+            text-align: center;
+        }
+
+        .pnl-item label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .pnl-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .param-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .param {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .param label {
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+        }
+
+        .param .value {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .param .value.danger {
+            color: var(--notion-red);
+        }
+
+        .side {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .side.long {
+            background-color: var(--notion-green-bg);
+            color: var(--notion-green);
+        }
+
+        .side.short {
+            background-color: var(--notion-red-bg);
+            color: var(--notion-red);
+        }
+
+        .tiers-visual {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .tier-item {
+            padding: 1rem;
+            border: 2px solid var(--notion-border);
+            border-radius: 0.5rem;
+            background-color: var(--notion-background-gray);
+            transition: all 0.3s;
+        }
+
+        .tier-item.current {
+            border-color: var(--notion-accent);
+            background-color: var(--notion-accent-bg);
+        }
+
+        .tier-item.done {
+            border-color: var(--notion-green);
+            background-color: var(--notion-green-bg);
+        }
+
+        .tier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .tier-number {
+            font-weight: 700;
+            color: var(--notion-text);
+        }
+
+        .tier-target, .tier-ratio, .tier-progress, .tier-execute-time {
+            margin-bottom: 0.75rem;
+        }
+
+        .tier-target label, .tier-ratio label, .tier-progress label, .tier-execute-time label {
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: var(--notion-border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.25rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--notion-accent);
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        .tier-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .chart-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chart-controls {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        #price-chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        .orders-table {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        .risk-analysis {
+            margin-top: 2rem;
+        }
+
+        .risk-metrics {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .risk-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .risk-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .risk-hint {
+            cursor: help;
+            color: var(--notion-text-light);
+            font-style: italic;
+        }
+
+        .risk-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .risk-value.danger {
+            color: var(--notion-red);
+        }
+
+        .risk-value.warning {
+            color: var(--notion-yellow);
+        }
+
+        .risk-value.safe {
+            color: var(--notion-green);
+        }
+
+        .risk-bar {
+            width: 100%;
+            height: 12px;
+            background-color: var(--notion-border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .risk-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .risk-fill.danger {
+            background-color: var(--notion-red);
+        }
+
+        .risk-fill.warning {
+            background-color: var(--notion-yellow);
+        }
+
+        .risk-fill.safe {
+            background-color: var(--notion-green);
+        }
+
+        .risk-recommendations {
+            margin-top: 1.5rem;
+        }
+
+        .recommendations {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .positive {
+            color: var(--notion-green);
+        }
+
+        .negative {
+            color: var(--notion-red);
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 50vh;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .param-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pnl-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .tiers-visual {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

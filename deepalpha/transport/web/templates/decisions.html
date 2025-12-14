@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>决策历史 - DeepAlpha</title>
+    <link rel="stylesheet" href="/static/css/notion.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app" class="notion-page">
+        <!-- 导航 -->
+        <nav class="notion-nav">
+            <a href="/desk" class="notion-nav-item">工作台</a>
+            <a href="/decisions" class="notion-nav-item active">蓝皮书</a>
+            <a href="/positions" class="notion-nav-item">红皮书</a>
+            <a href="/monitoring" class="notion-nav-item">监控</a>
+        </nav>
+
+        <!-- 页面标题 -->
+        <div class="notion-page-header">
+            <h1 class="notion-page-title">决策历史</h1>
+            <p class="notion-page-subtitle">AI智能体决策记录与分析</p>
+        </div>
+
+        <!-- 筛选器 -->
+        <div class="notion-card notion-fade-in">
+            <div class="filter-controls" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <select v-model="filters.symbol" @change="loadDecisions" class="notion-input">
+                    <option value="">所有交易对</option>
+                    <option v-for="symbol in symbols" :value="symbol">{{ symbol }}</option>
+                </select>
+                <select v-model="filters.action" @change="loadDecisions" class="notion-input">
+                    <option value="">所有动作</option>
+                    <option value="enter_long">开多</option>
+                    <option value="enter_short">开空</option>
+                    <option value="close_long">平多</option>
+                    <option value="close_short">平空</option>
+                    <option value="hold">持有</option>
+                </select>
+                <select v-model="filters.status" @change="loadDecisions" class="notion-input">
+                    <option value="">所有状态</option>
+                    <option value="pending">待执行</option>
+                    <option value="executed">已执行</option>
+                    <option value="failed">失败</option>
+                    <option value="cancelled">已取消</option>
+                </select>
+                <input
+                    type="date"
+                    v-model="filters.date"
+                    @change="loadDecisions"
+                    class="notion-input"
+                >
+            </div>
+        </div>
+
+        <!-- 决策列表 -->
+        <div class="decisions-list notion-fade-in">
+            <div
+                v-for="decision in decisions"
+                :key="decision.decision_id"
+                class="notion-card decision-item"
+                @click="showDecisionDetail(decision)"
+            >
+                <div class="decision-header">
+                    <div class="decision-symbol">
+                        <strong>{{ decision.symbol }}</strong>
+                        <span class="notion-badge" :class="getActionClass(decision.action)">
+                            {{ getActionText(decision.action) }}
+                        </span>
+                    </div>
+                    <div class="decision-status">
+                        <span class="notion-badge" :class="getStatusClass(decision.status)">
+                            {{ getStatusText(decision.status) }}
+                        </span>
+                        <small>{{ formatDate(decision.created_at) }}</small>
+                    </div>
+                </div>
+
+                <div class="decision-body">
+                    <div class="decision-metrics">
+                        <div class="metric">
+                            <label>置信度</label>
+                            <span>{{ decision.confidence }}%</span>
+                        </div>
+                        <div class="metric">
+                            <label>仓位</label>
+                            <span>${{ decision.position_size_usd }}</span>
+                        </div>
+                        <div class="metric">
+                            <label>杠杆</label>
+                            <span>{{ decision.leverage }}x</span>
+                        </div>
+                        <div class="metric">
+                            <label>AI模型</label>
+                            <span>{{ decision.model_provider }}/{{ decision.model_name }}</span>
+                        </div>
+                    </div>
+
+                    <div class="decision-reason" v-if="decision.reason">
+                        <p>{{ decision.reason }}</p>
+                    </div>
+                </div>
+
+                <!-- 层级设置 -->
+                <div class="decision-tiers" v-if="hasTiers(decision)">
+                    <div class="tier" v-for="i in 3" :key="i">
+                        <span>第{{ i }}层:</span>
+                        <span>{{ decision[`tier${i}_target`] }}</span>
+                        <span>({{ decision[`tier${i}_ratio`] * 100 }}%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination" v-if="totalPages > 1">
+            <button
+                @click="prevPage"
+                :disabled="page <= 1"
+                class="notion-button notion-button-secondary"
+            >
+                上一页
+            </button>
+            <span>第 {{ page }} 页 / 共 {{ totalPages }} 页</span>
+            <button
+                @click="nextPage"
+                :disabled="page >= totalPages"
+                class="notion-button notion-button-secondary"
+            >
+                下一页
+            </button>
+        </div>
+
+        <!-- 决策详情模态框 -->
+        <div class="modal" v-if="selectedDecision" @click="closeDetail">
+            <div class="modal-content notion-card" @click.stop>
+                <div class="modal-header">
+                    <h2>决策详情</h2>
+                    <button @click="closeDetail" class="notion-button notion-button-ghost">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="detail-section">
+                        <h3>基本信息</h3>
+                        <table class="notion-table">
+                            <tr>
+                                <td>决策ID</td>
+                                <td>{{ selectedDecision.decision_id }}</td>
+                            </tr>
+                            <tr>
+                                <td>交易对</td>
+                                <td>{{ selectedDecision.symbol }}</td>
+                            </tr>
+                            <tr>
+                                <td>动作</td>
+                                <td>{{ getActionText(selectedDecision.action) }}</td>
+                            </tr>
+                            <tr>
+                                <td>状态</td>
+                                <td>{{ getStatusText(selectedDecision.status) }}</td>
+                            </tr>
+                            <tr>
+                                <td>创建时间</td>
+                                <td>{{ formatDateTime(selectedDecision.created_at) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>决策参数</h3>
+                        <table class="notion-table">
+                            <tr>
+                                <td>置信度</td>
+                                <td>{{ selectedDecision.confidence }}%</td>
+                            </tr>
+                            <tr>
+                                <td>仓位大小</td>
+                                <td>${{ selectedDecision.position_size_usd }}</td>
+                            </tr>
+                            <tr>
+                                <td>杠杆</td>
+                                <td>{{ selectedDecision.leverage }}x</td>
+                            </tr>
+                            <tr>
+                                <td>止损</td>
+                                <td>{{ selectedDecision.stop_loss }}%</td>
+                            </tr>
+                            <tr>
+                                <td>止盈</td>
+                                <td>{{ selectedDecision.take_profit }}%</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="detail-section" v-if="selectedDecision.reason">
+                        <h3>决策理由</h3>
+                        <div class="notion-callout notion-callout-info">
+                            {{ selectedDecision.reason }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    decisions: [],
+                    symbols: [],
+                    filters: {
+                        symbol: '',
+                        action: '',
+                        status: '',
+                        date: ''
+                    },
+                    page: 1,
+                    pageSize: 20,
+                    totalPages: 0,
+                    selectedDecision: null
+                };
+            },
+            methods: {
+                async loadDecisions() {
+                    try {
+                        const params = new URLSearchParams({
+                            page: this.page,
+                            limit: this.pageSize,
+                            ...this.filters
+                        });
+
+                        const response = await fetch(`/api/live/decisions?${params}`);
+                        const data = await response.json();
+
+                        this.decisions = data.decisions || [];
+                        this.totalPages = Math.ceil(data.total / this.pageSize);
+
+                        // 提取所有交易对
+                        this.symbols = [...new Set(data.decisions?.map(d => d.symbol) || [])];
+                    } catch (error) {
+                        console.error('加载决策失败:', error);
+                    }
+                },
+                showDecisionDetail(decision) {
+                    this.selectedDecision = decision;
+                },
+                closeDetail() {
+                    this.selectedDecision = null;
+                },
+                getActionClass(action) {
+                    const classes = {
+                        'enter_long': 'notion-badge-success',
+                        'enter_short': 'notion-badge-danger',
+                        'close_long': 'notion-badge-warning',
+                        'close_short': 'notion-badge-warning',
+                        'hold': 'notion-badge-default'
+                    };
+                    return classes[action] || 'notion-badge-default';
+                },
+                getActionText(action) {
+                    const texts = {
+                        'enter_long': '开多',
+                        'enter_short': '开空',
+                        'close_long': '平多',
+                        'close_short': '平空',
+                        'hold': '持有'
+                    };
+                    return texts[action] || action;
+                },
+                getStatusClass(status) {
+                    const classes = {
+                        'pending': 'notion-badge-warning',
+                        'executed': 'notion-badge-success',
+                        'failed': 'notion-badge-danger',
+                        'cancelled': 'notion-badge-default',
+                        'hold': 'notion-badge-info'
+                    };
+                    return classes[status] || 'notion-badge-default';
+                },
+                getStatusText(status) {
+                    const texts = {
+                        'pending': '待执行',
+                        'executed': '已执行',
+                        'failed': '失败',
+                        'cancelled': '已取消',
+                        'hold': '持有'
+                    };
+                    return texts[status] || status;
+                },
+                formatDate(dateStr) {
+                    return new Date(dateStr).toLocaleDateString('zh-CN');
+                },
+                formatDateTime(dateStr) {
+                    return new Date(dateStr).toLocaleString('zh-CN');
+                },
+                hasTiers(decision) {
+                    return decision.tier1_target || decision.tier2_target || decision.tier3_target;
+                },
+                prevPage() {
+                    if (this.page > 1) {
+                        this.page--;
+                        this.loadDecisions();
+                    }
+                },
+                nextPage() {
+                    if (this.page < this.totalPages) {
+                        this.page++;
+                        this.loadDecisions();
+                    }
+                }
+            },
+            mounted() {
+                this.loadDecisions();
+            }
+        }).mount('#app');
+    </script>
+
+    <style>
+        .decisions-list {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .decision-item {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .decision-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .decision-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .decision-symbol {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .decision-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--notion-text-light);
+        }
+
+        .decision-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .metric label {
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+        }
+
+        .metric span {
+            font-weight: 600;
+        }
+
+        .decision-tiers {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--notion-border);
+        }
+
+        .tier {
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+        }
+
+        .detail-section h3 {
+            margin-bottom: 1rem;
+        }
+
+        .notion-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .notion-table td {
+            padding: 0.5rem;
+            border: 1px solid var(--notion-border);
+        }
+
+        .notion-table td:first-child {
+            font-weight: 600;
+            background-color: var(--notion-background-gray);
+        }
+    </style>
+</body>
+</html>

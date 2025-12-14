@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>决策详情 - DeepAlpha</title>
+    <link rel="stylesheet" href="/static/css/notion.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="app" class="notion-page">
+        <!-- 导航 -->
+        <nav class="notion-nav">
+            <a href="/desk" class="notion-nav-item">工作台</a>
+            <a href="/decisions" class="notion-nav-item active">蓝皮书</a>
+            <a href="/positions" class="notion-nav-item">红皮书</a>
+            <a href="/monitoring" class="notion-nav-item">监控</a>
+        </nav>
+
+        <!-- 返回按钮 -->
+        <div class="back-button" style="margin-bottom: 1rem;">
+            <a href="/decisions" class="notion-button notion-button-ghost">
+                ← 返回决策列表
+            </a>
+        </div>
+
+        <!-- 决策详情 -->
+        <div v-if="decision" class="decision-detail">
+            <!-- 基本信息卡片 -->
+            <div class="detail-header notion-card notion-fade-in">
+                <div class="header-top">
+                    <div class="decision-title">
+                        <h1>{{ decision.symbol }} - {{ getActionText(decision.action) }}</h1>
+                        <span class="notion-badge" :class="getStatusClass(decision.status)">
+                            {{ getStatusText(decision.status) }}
+                        </span>
+                    </div>
+                    <div class="decision-meta">
+                        <div>决策ID: <code>{{ decision.decision_id }}</code></div>
+                        <div>创建时间: {{ formatDateTime(decision.created_at) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 参数和风险卡片 -->
+            <div class="detail-grid notion-fade-in">
+                <!-- 决策参数 -->
+                <div class="notion-card">
+                    <h2>决策参数</h2>
+                    <div class="param-grid">
+                        <div class="param">
+                            <label>置信度</label>
+                            <div class="value">
+                                <div class="confidence-bar">
+                                    <div class="fill" :style="{ width: decision.confidence + '%' }"></div>
+                                </div>
+                                <span>{{ decision.confidence }}%</span>
+                            </div>
+                        </div>
+                        <div class="param">
+                            <label>仓位大小</label>
+                            <div class="value">${{ decision.position_size_usd }}</div>
+                        </div>
+                        <div class="param">
+                            <label>杠杆倍数</label>
+                            <div class="value">{{ decision.leverage }}x</div>
+                        </div>
+                        <div class="param">
+                            <label>AI模型</label>
+                            <div class="value">{{ decision.model_provider }} / {{ decision.model_name }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 风险控制 -->
+                <div class="notion-card">
+                    <h2>风险控制</h2>
+                    <div class="param-grid">
+                        <div class="param">
+                            <label>止损</label>
+                            <div class="value danger">{{ decision.stop_loss }}%</div>
+                        </div>
+                        <div class="param">
+                            <label>止盈</label>
+                            <div class="value success">{{ decision.take_profit }}%</div>
+                        </div>
+                        <div class="param">
+                            <label>风险收益比</label>
+                            <div class="value">1:{{ calculateRRR(decision) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分级止盈 -->
+            <div v-if="hasTiers(decision)" class="tiers-section notion-card notion-fade-in">
+                <h2>分级止盈计划</h2>
+                <div class="tiers-visual">
+                    <div
+                        v-for="(tier, index) in getTiers(decision)"
+                        :key="index"
+                        class="tier-item"
+                        :class="{ executed: tier.executed }"
+                    >
+                        <div class="tier-number">L{{ index + 1 }}</div>
+                        <div class="tier-target">{{ tier.target }}</div>
+                        <div class="tier-ratio">{{ (tier.ratio * 100).toFixed(0) }}%</div>
+                        <div class="tier-status">
+                            <i class="icon" :class="tier.executed ? 'check' : 'clock'"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 决策理由 -->
+            <div v-if="decision.reason" class="reason-section notion-card notion-fade-in">
+                <h2>决策理由</h2>
+                <div class="notion-callout notion-callout-info">
+                    {{ decision.reason }}
+                </div>
+            </div>
+
+            <!-- AI分析结果 -->
+            <div class="ai-analysis notion-fade-in">
+                <div class="analysis-header">
+                    <h2>AI智能体分析</h2>
+                    <button @click="refreshAnalysis" class="notion-button notion-button-secondary">
+                        刷新分析
+                    </button>
+                </div>
+
+                <!-- 技术指标分析 -->
+                <div class="analysis-card notion-card">
+                    <h3>技术指标分析</h3>
+                    <div class="insight-content">
+                        <div class="insight-metrics">
+                            <div class="metric">
+                                <label>RSI (14)</label>
+                                <span>{{ indicatorData.rsi }}</span>
+                                <span class="signal" :class="getSignalClass(indicatorData.rsi_signal)">
+                                    {{ indicatorData.rsi_signal }}
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <label>MACD</label>
+                                <span>{{ indicatorData.macd }}</span>
+                                <span class="signal" :class="getSignalClass(indicatorData.macd_signal)">
+                                    {{ indicatorData.macd_signal }}
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <label>EMA趋势</label>
+                                <span>{{ indicatorData.ema_trend }}</span>
+                                <span class="signal" :class="getSignalClass(indicatorData.ema_signal)">
+                                    {{ indicatorData.ema_signal }}
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <label>布林带位置</label>
+                                <span>{{ indicatorData.bb_position }}</span>
+                                <span class="signal" :class="getSignalClass(indicatorData.bb_signal)">
+                                    {{ indicatorData.bb_signal }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="insight-text">
+                            {{ indicatorData.insight }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 形态分析 -->
+                <div class="analysis-card notion-card">
+                    <h3>形态分析</h3>
+                    <div class="insight-content">
+                        <div class="patterns-found">
+                            <div
+                                v-for="pattern in patternData.patterns"
+                                :key="pattern.name"
+                                class="pattern-item"
+                            >
+                                <span class="pattern-name">{{ pattern.name }}</span>
+                                <span class="pattern-type" :class="pattern.type">
+                                    {{ pattern.type === 'bullish' ? '看涨' : '看跌' }}
+                                </span>
+                                <span class="pattern-confidence">{{ pattern.confidence }}%</span>
+                            </div>
+                        </div>
+                        <div class="insight-text">
+                            {{ patternData.insight }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 趋势分析 -->
+                <div class="analysis-card notion-card">
+                    <h3>趋势分析</h3>
+                    <div class="insight-content">
+                        <div class="trend-info">
+                            <div class="trend-level">
+                                <label>主要趋势 (1H)</label>
+                                <span :class="getTrendClass(trendData.trend_1h)">
+                                    {{ trendData.trend_1h }}
+                                </span>
+                            </div>
+                            <div class="trend-level">
+                                <label>中期趋势 (4H)</label>
+                                <span :class="getTrendClass(trendData.trend_4h)">
+                                    {{ trendData.trend_4h }}
+                                </span>
+                            </div>
+                            <div class="trend-level">
+                                <label>长期趋势 (1D)</label>
+                                <span :class="getTrendClass(trendData.trend_1d)">
+                                    {{ trendData.trend_1d }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="insight-text">
+                            {{ trendData.insight }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- K线图表 -->
+            <div class="chart-section notion-card notion-fade-in">
+                <h2>价格走势图</h2>
+                <div id="price-chart"></div>
+            </div>
+
+            <!-- 执行记录 -->
+            <div v-if="decision.orders && decision.orders.length" class="execution-section notion-card notion-fade-in">
+                <h2>执行记录</h2>
+                <div class="orders-table">
+                    <table class="notion-table">
+                        <thead>
+                            <tr>
+                                <th>订单ID</th>
+                                <th>方向</th>
+                                <th>类型</th>
+                                <th>数量</th>
+                                <th>价格</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="order in decision.orders" :key="order.id">
+                                <td>{{ order.ft_order_id || order.id }}</td>
+                                <td>
+                                    <span class="side" :class="order.side">
+                                        {{ getSideText(order.side) }}
+                                    </span>
+                                </td>
+                                <td>{{ order.order_type }}</td>
+                                <td>{{ order.amount }}</td>
+                                <td>{{ order.price || 'Market' }}</td>
+                                <td>
+                                    <span class="notion-badge" :class="getOrderStatusClass(order.status)">
+                                        {{ getOrderStatusText(order.status) }}
+                                    </span>
+                                </td>
+                                <td>{{ formatDateTime(order.created_at) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div v-else class="loading">
+            <div class="notion-spinner"></div>
+            <p>加载决策详情中...</p>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    decisionId: null,
+                    decision: null,
+                    indicatorData: {},
+                    patternData: { patterns: [] },
+                    trendData: {}
+                };
+            },
+            methods: {
+                async loadDecision() {
+                    try {
+                        const response = await fetch(`/api/live/decisions/${this.decisionId}`);
+                        const data = await response.json();
+                        this.decision = data.decision;
+
+                        // 加载分析数据
+                        await this.loadAnalysis();
+                        this.renderChart();
+                    } catch (error) {
+                        console.error('加载决策失败:', error);
+                    }
+                },
+                async loadAnalysis() {
+                    try {
+                        // 加载技术指标分析
+                        const indicatorRes = await fetch(`/api/live/decisions/${this.decisionId}/indicators`);
+                        this.indicatorData = await indicatorRes.json();
+
+                        // 加载形态分析
+                        const patternRes = await fetch(`/api/live/decisions/${this.decisionId}/patterns`);
+                        this.patternData = await patternRes.json();
+
+                        // 加载趋势分析
+                        const trendRes = await fetch(`/api/live/decisions/${this.decisionId}/trend`);
+                        this.trendData = await trendRes.json();
+                    } catch (error) {
+                        console.error('加载分析失败:', error);
+                    }
+                },
+                async refreshAnalysis() {
+                    await this.loadAnalysis();
+                    this.renderChart();
+                },
+                renderChart() {
+                    // 这里使用Plotly渲染K线图
+                    // 实际实现需要从后端获取K线数据
+                    const trace = {
+                        x: ['2024-01-01', '2024-01-02', '2024-01-03'],
+                        open: [100, 105, 102],
+                        high: [110, 108, 105],
+                        low: [95, 102, 100],
+                        close: [105, 102, 104],
+                        type: 'candlestick',
+                        name: this.decision?.symbol
+                    };
+
+                    const layout = {
+                        title: `${this.decision?.symbol} 价格走势`,
+                        xaxis: { rangeslider: { visible: false } },
+                        paper_bgcolor: 'var(--notion-background)',
+                        plot_bgcolor: 'var(--notion-background)',
+                        font: { color: 'var(--notion-text)' }
+                    };
+
+                    Plotly.newPlot('price-chart', [trace], layout);
+                },
+                getActionText(action) {
+                    const texts = {
+                        'enter_long': '开多',
+                        'enter_short': '开空',
+                        'close_long': '平多',
+                        'close_short': '平空',
+                        'hold': '持有'
+                    };
+                    return texts[action] || action;
+                },
+                getStatusClass(status) {
+                    const classes = {
+                        'pending': 'notion-badge-warning',
+                        'executed': 'notion-badge-success',
+                        'failed': 'notion-badge-danger',
+                        'cancelled': 'notion-badge-default',
+                        'hold': 'notion-badge-info'
+                    };
+                    return classes[status] || 'notion-badge-default';
+                },
+                getStatusText(status) {
+                    const texts = {
+                        'pending': '待执行',
+                        'executed': '已执行',
+                        'failed': '失败',
+                        'cancelled': '已取消',
+                        'hold': '持有'
+                    };
+                    return texts[status] || status;
+                },
+                getSignalClass(signal) {
+                    if (signal === 'buy') return 'success';
+                    if (signal === 'sell') return 'danger';
+                    return 'neutral';
+                },
+                getTrendClass(trend) {
+                    if (trend === 'uptrend') return 'success';
+                    if (trend === 'downtrend') return 'danger';
+                    return 'neutral';
+                },
+                getSideText(side) {
+                    const texts = {
+                        'buy': '买入',
+                        'sell': '卖出',
+                        'long': '多头',
+                        'short': '空头'
+                    };
+                    return texts[side] || side;
+                },
+                getOrderStatusClass(status) {
+                    const classes = {
+                        'open': 'notion-badge-warning',
+                        'filled': 'notion-badge-success',
+                        'cancelled': 'notion-badge-default',
+                        'rejected': 'notion-badge-danger'
+                    };
+                    return classes[status] || 'notion-badge-default';
+                },
+                getOrderStatusText(status) {
+                    const texts = {
+                        'open': '未成交',
+                        'filled': '已成交',
+                        'cancelled': '已取消',
+                        'rejected': '已拒绝'
+                    };
+                    return texts[status] || status;
+                },
+                formatDateTime(dateStr) {
+                    return new Date(dateStr).toLocaleString('zh-CN');
+                },
+                calculateRRR(decision) {
+                    if (!decision.stop_loss || !decision.take_profit) return 'N/A';
+                    const risk = Math.abs(decision.stop_loss);
+                    const reward = decision.take_profit;
+                    return (reward / risk).toFixed(2);
+                },
+                hasTiers(decision) {
+                    return decision.tier1_target || decision.tier2_target || decision.tier3_target;
+                },
+                getTiers(decision) {
+                    const tiers = [];
+                    for (let i = 1; i <= 3; i++) {
+                        if (decision[`tier${i}_target`]) {
+                            tiers.push({
+                                target: decision[`tier${i}_target`],
+                                ratio: decision[`tier${i}_ratio`],
+                                executed: decision[`tier${i}_executed`] || false
+                            });
+                        }
+                    }
+                    return tiers;
+                }
+            },
+            mounted() {
+                // 从URL获取决策ID
+                const pathParts = window.location.pathname.split('/');
+                this.decisionId = pathParts[pathParts.length - 1];
+
+                if (this.decisionId) {
+                    this.loadDecision();
+                }
+            }
+        }).mount('#app');
+    </script>
+
+    <style>
+        .decision-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .detail-header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .decision-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .decision-title h1 {
+            margin: 0;
+        }
+
+        .decision-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            color: var(--notion-text-light);
+            font-size: 0.875rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .param-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .param {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .param label {
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+        }
+
+        .param .value {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .param .value.danger {
+            color: var(--notion-red);
+        }
+
+        .param .value.success {
+            color: var(--notion-green);
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background-color: var(--notion-border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.25rem;
+        }
+
+        .confidence-bar .fill {
+            height: 100%;
+            background-color: var(--notion-accent);
+            transition: width 0.3s;
+        }
+
+        .tiers-visual {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .tier-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border: 2px solid var(--notion-border);
+            border-radius: 0.5rem;
+            background-color: var(--notion-background-gray);
+            flex: 1;
+        }
+
+        .tier-item.executed {
+            border-color: var(--notion-green);
+            background-color: var(--notion-green-bg);
+        }
+
+        .tier-number {
+            font-weight: 700;
+            color: var(--notion-accent);
+        }
+
+        .tier-target {
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .tier-ratio {
+            color: var(--notion-text-light);
+        }
+
+        .tier-status .icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tier-status .icon.check {
+            background-color: var(--notion-green);
+            color: white;
+        }
+
+        .tier-status .icon.clock {
+            background-color: var(--notion-border);
+            color: var(--notion-text-light);
+        }
+
+        .ai-analysis {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .analysis-card {
+            margin-top: 1rem;
+        }
+
+        .insight-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .insight-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background-color: var(--notion-background-gray);
+            border-radius: 0.375rem;
+        }
+
+        .metric label {
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+        }
+
+        .signal {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .signal.success {
+            background-color: var(--notion-green-bg);
+            color: var(--notion-green);
+        }
+
+        .signal.danger {
+            background-color: var(--notion-red-bg);
+            color: var(--notion-red);
+        }
+
+        .signal.neutral {
+            background-color: var(--notion-background-gray);
+            color: var(--notion-text-light);
+        }
+
+        .patterns-found {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .pattern-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background-color: var(--notion-background-gray);
+            border-radius: 0.25rem;
+        }
+
+        .pattern-name {
+            font-weight: 600;
+        }
+
+        .pattern-type.bullish {
+            color: var(--notion-green);
+        }
+
+        .pattern-type.bearish {
+            color: var(--notion-red);
+        }
+
+        .trend-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .trend-level {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background-color: var(--notion-background-gray);
+            border-radius: 0.25rem;
+        }
+
+        .trend-level span.success {
+            color: var(--notion-green);
+        }
+
+        .trend-level span.danger {
+            color: var(--notion-red);
+        }
+
+        .insight-text {
+            padding: 1rem;
+            background-color: var(--notion-background-gray);
+            border-radius: 0.375rem;
+            border-left: 4px solid var(--notion-accent);
+        }
+
+        #price-chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        .orders-table {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        .side.long {
+            color: var(--notion-green);
+        }
+
+        .side.short {
+            color: var(--notion-red);
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 50vh;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .param-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .insight-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

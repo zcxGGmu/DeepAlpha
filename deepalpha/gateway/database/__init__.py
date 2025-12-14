@@ -10,6 +10,8 @@ from deepalpha.gateway.database.models import (
     AgentResultModel,
     TradeModel,
 )
+from .decision_log_store import DecisionLogStore
+from .live_positions import LivePositionsStore
 
 __all__ = [
     "Base",
@@ -20,4 +22,6 @@ __all__ = [
     "BalanceModel",
     "AgentResultModel",
     "TradeModel",
+    "DecisionLogStore",
+    "LivePositionsStore",
 ]

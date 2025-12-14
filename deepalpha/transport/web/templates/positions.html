@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>持仓管理 - DeepAlpha</title>
+    <link rel="stylesheet" href="/static/css/notion.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app" class="notion-page">
+        <!-- 导航 -->
+        <nav class="notion-nav">
+            <a href="/desk" class="notion-nav-item">工作台</a>
+            <a href="/decisions" class="notion-nav-item">蓝皮书</a>
+            <a href="/positions" class="notion-nav-item active">红皮书</a>
+            <a href="/monitoring" class="notion-nav-item">监控</a>
+        </nav>
+
+        <!-- 页面标题 -->
+        <div class="notion-page-header">
+            <h1 class="notion-page-title">持仓管理</h1>
+            <p class="notion-page-subtitle">实时持仓监控与风险管理</p>
+        </div>
+
+        <!-- 账户概览 -->
+        <div class="account-overview notion-fade-in">
+            <div class="overview-cards">
+                <div class="notion-card">
+                    <h3>总资产</h3>
+                    <div class="value">{{ formatCurrency(accountInfo.total_balance) }}</div>
+                    <div class="change" :class="accountInfo.total_change >= 0 ? 'positive' : 'negative'">
+                        {{ accountInfo.total_change >= 0 ? '+' : '' }}{{ accountInfo.total_change_percent }}%
+                    </div>
+                </div>
+                <div class="notion-card">
+                    <h3>可用余额</h3>
+                    <div class="value">{{ formatCurrency(accountInfo.free_balance) }}</div>
+                </div>
+                <div class="notion-card">
+                    <h3>已用保证金</h3>
+                    <div class="value">{{ formatCurrency(accountInfo.used_balance) }}</div>
+                </div>
+                <div class="notion-card">
+                    <h3>今日盈亏</h3>
+                    <div class="value" :class="accountInfo.today_pnl >= 0 ? 'positive' : 'negative'">
+                        {{ formatCurrency(accountInfo.today_pnl) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 持仓列表 -->
+        <div class="positions-section notion-fade-in">
+            <div class="section-header">
+                <h2>当前持仓</h2>
+                <div class="controls">
+                    <select v-model="filterSymbol" @change="loadPositions" class="notion-input">
+                        <option value="">所有交易对</option>
+                        <option v-for="symbol in symbols" :value="symbol">{{ symbol }}</option>
+                    </select>
+                    <button @click="refreshPositions" class="notion-button notion-button-primary">
+                        刷新
+                    </button>
+                </div>
+            </div>
+
+            <div class="positions-grid">
+                <div
+                    v-for="position in filteredPositions"
+                    :key="position.id"
+                    class="notion-card position-card"
+                    @click="showPositionDetail(position)"
+                >
+                    <div class="position-header">
+                        <div class="symbol-info">
+                            <h3>{{ position.symbol }}</h3>
+                            <span class="side" :class="position.side">
+                                {{ position.side === 'long' ? '多头' : '空头' }}
+                            </span>
+                        </div>
+                        <div class="position-size">
+                            <span>{{ position.size }}</span>
+                            <small>{{ position.symbol.split('/')[1] }}</small>
+                        </div>
+                    </div>
+
+                    <div class="position-metrics">
+                        <div class="metric">
+                            <label>开仓价格</label>
+                            <span>{{ formatPrice(position.entry_price) }}</span>
+                        </div>
+                        <div class="metric">
+                            <label>标记价格</label>
+                            <span>{{ formatPrice(position.mark_price) }}</span>
+                        </div>
+                        <div class="metric">
+                            <label>未实现盈亏</label>
+                            <span class="pnl" :class="position.unrealized_pnl >= 0 ? 'positive' : 'negative'">
+                                {{ formatCurrency(position.unrealized_pnl) }}
+                            </span>
+                        </div>
+                        <div class="metric">
+                            <label>收益率</label>
+                            <span class="pnl-percent" :class="position.unrealized_percent >= 0 ? 'positive' : 'negative'">
+                                {{ position.unrealized_percent >= 0 ? '+' : '' }}{{ position.unrealized_percent.toFixed(2) }}%
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 层级信息 -->
+                    <div class="tiers-info" v-if="position.tiers && position.tiers.length">
+                        <h4>止盈层级</h4>
+                        <div class="tiers-progress">
+                            <div
+                                v-for="(tier, index) in position.tiers"
+                                :key="index"
+                                class="tier-item"
+                                :class="{ done: tier.done }"
+                            >
+                                <span>L{{ index + 1 }}</span>
+                                <span>{{ formatPrice(tier.target_price) }}</span>
+                                <span>{{ (tier.ratio * 100).toFixed(0) }}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 风险指标 -->
+                    <div class="risk-indicators">
+                        <div class="indicator">
+                            <span>保证金率</span>
+                            <span :class="getMarginClass(position.margin_ratio)">
+                                {{ (position.margin_ratio * 100).toFixed(2) }}%
+                            </span>
+                        </div>
+                        <div class="indicator">
+                            <span>强平价格</span>
+                            <span class="danger">{{ formatPrice(position.liquidation_price) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史持仓 -->
+        <div class="history-section notion-fade-in">
+            <div class="section-header">
+                <h2>历史持仓</h2>
+                <button @click="toggleHistory" class="notion-button notion-button-secondary">
+                    {{ showHistory ? '隐藏' : '显示' }}历史
+                </button>
+            </div>
+
+            <div v-if="showHistory" class="history-table">
+                <table class="notion-table">
+                    <thead>
+                        <tr>
+                            <th>交易对</th>
+                            <th>方向</th>
+                            <th>开仓价格</th>
+                            <th>平仓价格</th>
+                            <th>数量</th>
+                            <th>已实现盈亏</th>
+                            <th>收益率</th>
+                            <th>持仓时间</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="position in historyPositions" :key="position.id">
+                            <td>{{ position.symbol }}</td>
+                            <td>
+                                <span class="side" :class="position.side">
+                                    {{ position.side === 'long' ? '多' : '空' }}
+                                </span>
+                            </td>
+                            <td>{{ formatPrice(position.entry_price) }}</td>
+                            <td>{{ formatPrice(position.exit_price) }}</td>
+                            <td>{{ position.size }}</td>
+                            <td :class="position.realized_pnl >= 0 ? 'positive' : 'negative'">
+                                {{ formatCurrency(position.realized_pnl) }}
+                            </td>
+                            <td :class="position.profit_percent >= 0 ? 'positive' : 'negative'">
+                                {{ position.profit_percent >= 0 ? '+' : '' }}{{ position.profit_percent.toFixed(2) }}%
+                            </td>
+                            <td>{{ formatDuration(position.open_time, position.close_time) }}</td>
+                            <td>
+                                <span class="notion-badge notion-badge-success">已平仓</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 持仓详情模态框 -->
+        <div class="modal" v-if="selectedPosition" @click="closeDetail">
+            <div class="modal-content notion-card" @click.stop>
+                <div class="modal-header">
+                    <h2>持仓详情 - {{ selectedPosition.symbol }}</h2>
+                    <button @click="closeDetail" class="notion-button notion-button-ghost">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- 基本信息 -->
+                    <div class="detail-section">
+                        <h3>基本信息</h3>
+                        <table class="notion-table">
+                            <tr>
+                                <td>交易对</td>
+                                <td>{{ selectedPosition.symbol }}</td>
+                            </tr>
+                            <tr>
+                                <td>方向</td>
+                                <td>
+                                    <span class="side" :class="selectedPosition.side">
+                                        {{ selectedPosition.side === 'long' ? '多头' : '空头' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>仓位大小</td>
+                                <td>{{ selectedPosition.size }} {{ selectedPosition.symbol.split('/')[1] }}</td>
+                            </tr>
+                            <tr>
+                                <td>杠杆</td>
+                                <td>{{ selectedPosition.leverage }}x</td>
+                            </tr>
+                            <tr>
+                                <td>开仓时间</td>
+                                <td>{{ formatDateTime(selectedPosition.open_time) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- 价格信息 -->
+                    <div class="detail-section">
+                        <h3>价格信息</h3>
+                        <table class="notion-table">
+                            <tr>
+                                <td>开仓价格</td>
+                                <td>{{ formatPrice(selectedPosition.entry_price) }}</td>
+                            </tr>
+                            <tr>
+                                <td>标记价格</td>
+                                <td>{{ formatPrice(selectedPosition.mark_price) }}</td>
+                            </tr>
+                            <tr>
+                                <td>强平价格</td>
+                                <td class="danger">{{ formatPrice(selectedPosition.liquidation_price) }}</td>
+                            </tr>
+                            <tr>
+                                <td>止损价格</td>
+                                <td>{{ formatPrice(selectedPosition.stop_loss) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- 盈亏信息 -->
+                    <div class="detail-section">
+                        <h3>盈亏信息</h3>
+                        <table class="notion-table">
+                            <tr>
+                                <td>未实现盈亏</td>
+                                <td :class="selectedPosition.unrealized_pnl >= 0 ? 'positive' : 'negative'">
+                                    {{ formatCurrency(selectedPosition.unrealized_pnl) }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>收益率</td>
+                                <td :class="selectedPosition.unrealized_percent >= 0 ? 'positive' : 'negative'">
+                                    {{ selectedPosition.unrealized_percent >= 0 ? '+' : '' }}{{ selectedPosition.unrealized_percent.toFixed(2) }}%
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>已实现盈亏</td>
+                                <td :class="selectedPosition.realized_pnl >= 0 ? 'positive' : 'negative'">
+                                    {{ formatCurrency(selectedPosition.realized_pnl) }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- 风险指标 -->
+                    <div class="detail-section">
+                        <h3>风险指标</h3>
+                        <table class="notion-table">
+                            <tr>
+                                <td>保证金</td>
+                                <td>{{ formatCurrency(selectedPosition.margin) }}</td>
+                            </tr>
+                            <tr>
+                                <td>保证金率</td>
+                                <td :class="getMarginClass(selectedPosition.margin_ratio)">
+                                    {{ (selectedPosition.margin_ratio * 100).toFixed(2) }}%
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>维持保证金率</td>
+                                <td>{{ (selectedPosition.maintenance_margin_rate * 100).toFixed(2) }}%</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    positions: [],
+                    historyPositions: [],
+                    accountInfo: {
+                        total_balance: 0,
+                        free_balance: 0,
+                        used_balance: 0,
+                        today_pnl: 0,
+                        total_change: 0,
+                        total_change_percent: 0
+                    },
+                    symbols: [],
+                    filterSymbol: '',
+                    selectedPosition: null,
+                    showHistory: false
+                };
+            },
+            computed: {
+                filteredPositions() {
+                    if (!this.filterSymbol) return this.positions;
+                    return this.positions.filter(p => p.symbol === this.filterSymbol);
+                }
+            },
+            methods: {
+                async loadPositions() {
+                    try {
+                        // 加载当前持仓
+                        const positionsRes = await fetch('/api/live/positions');
+                        const positionsData = await positionsRes.json();
+
+                        this.positions = positionsData.positions || [];
+
+                        // 提取所有交易对
+                        this.symbols = [...new Set(this.positions.map(p => p.symbol))];
+
+                        // 加载账户信息
+                        const accountRes = await fetch('/api/live/account');
+                        const accountData = await accountRes.json();
+
+                        this.accountInfo = {
+                            ...this.accountInfo,
+                            ...accountData
+                        };
+                    } catch (error) {
+                        console.error('加载持仓失败:', error);
+                    }
+                },
+                async loadHistory() {
+                    try {
+                        const response = await fetch('/api/live/positions/history');
+                        const data = await response.json();
+                        this.historyPositions = data.positions || [];
+                    } catch (error) {
+                        console.error('加载历史持仓失败:', error);
+                    }
+                },
+                async refreshPositions() {
+                    await this.loadPositions();
+                    if (this.showHistory) {
+                        await this.loadHistory();
+                    }
+                },
+                showPositionDetail(position) {
+                    this.selectedPosition = position;
+                },
+                closeDetail() {
+                    this.selectedPosition = null;
+                },
+                toggleHistory() {
+                    this.showHistory = !this.showHistory;
+                    if (this.showHistory && this.historyPositions.length === 0) {
+                        this.loadHistory();
+                    }
+                },
+                formatCurrency(value) {
+                    return new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                    }).format(value);
+                },
+                formatPrice(value) {
+                    return new Intl.NumberFormat('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 6
+                    }).format(value);
+                },
+                formatDateTime(dateStr) {
+                    return new Date(dateStr).toLocaleString('zh-CN');
+                },
+                formatDuration(start, end) {
+                    const startTime = new Date(start);
+                    const endTime = new Date(end);
+                    const duration = endTime - startTime;
+
+                    const days = Math.floor(duration / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                    return `${days}天${hours}小时`;
+                },
+                getMarginClass(ratio) {
+                    if (ratio < 0.1) return 'danger';
+                    if (ratio < 0.3) return 'warning';
+                    return 'safe';
+                }
+            },
+            mounted() {
+                this.loadPositions();
+
+                // 设置定时刷新
+                setInterval(() => {
+                    this.loadPositions();
+                }, 30000); // 30秒刷新一次
+            }
+        }).mount('#app');
+    </script>
+
+    <style>
+        .account-overview {
+            margin-bottom: 2rem;
+        }
+
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .overview-cards .notion-card {
+            text-align: center;
+        }
+
+        .overview-cards h3 {
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .overview-cards .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .change {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .change.positive {
+            color: var(--notion-green);
+        }
+
+        .change.negative {
+            color: var(--notion-red);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .positions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1rem;
+        }
+
+        .position-card {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .position-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .symbol-info h3 {
+            margin: 0;
+        }
+
+        .side {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .side.long {
+            background-color: var(--notion-green-bg);
+            color: var(--notion-green);
+        }
+
+        .side.short {
+            background-color: var(--notion-red-bg);
+            color: var(--notion-red);
+        }
+
+        .position-size {
+            text-align: right;
+        }
+
+        .position-size span {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .position-size small {
+            color: var(--notion-text-light);
+        }
+
+        .position-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric label {
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+        }
+
+        .pnl, .pnl-percent {
+            font-weight: 600;
+        }
+
+        .pnl.positive, .pnl-percent.positive {
+            color: var(--notion-green);
+        }
+
+        .pnl.negative, .pnl-percent.negative {
+            color: var(--notion-red);
+        }
+
+        .tiers-info {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--notion-border);
+        }
+
+        .tiers-info h4 {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: var(--notion-text-light);
+        }
+
+        .tiers-progress {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tier-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid var(--notion-border);
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .tier-item.done {
+            background-color: var(--notion-green-bg);
+            border-color: var(--notion-green);
+        }
+
+        .risk-indicators {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--notion-border);
+        }
+
+        .indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .indicator span:first-child {
+            font-size: 0.875rem;
+            color: var(--notion-text-light);
+        }
+
+        .danger {
+            color: var(--notion-red) !important;
+        }
+
+        .warning {
+            color: var(--notion-yellow) !important;
+        }
+
+        .safe {
+            color: var(--notion-green) !important;
+        }
+
+        .history-section {
+            margin-top: 2rem;
+        }
+
+        .history-table {
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+
+        .notion-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .notion-table th {
+            background-color: var(--notion-background-gray);
+            font-weight: 600;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .notion-table td {
+            padding: 0.75rem;
+            border: 1px solid var(--notion-border);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+        }
+
+        .detail-section h3 {
+            margin-bottom: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+    </style>
+</body>
+</html>
