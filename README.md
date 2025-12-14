@@ -333,6 +333,1132 @@ graph TB
 - 性能优化策略
 - 部署架构指南
 
+## 📊 子功能模块架构
+
+### 1. 市场数据模块架构
+
+```mermaid
+graph TB
+    subgraph "市场数据模块架构"
+        subgraph "数据源层"
+            DS1[Binance WebSocket]
+            DS2[REST API轮询]
+            DS3[新闻数据源]
+            DS4[情绪数据源]
+        end
+
+        subgraph "数据采集层"
+            DC1[WebSocket连接器]
+            DC2[REST轮询器]
+            DC3[新闻聚合器]
+            DC4[数据验证器]
+        end
+
+        subgraph "数据流处理层"
+            DP1[实时数据流<br/>100K+ pts/s]
+            DP2[历史数据管理器]
+            DP3[数据清洗器]
+            DP4[数据标准化器]
+        end
+
+        subgraph "存储层"
+            ST1[(Redis缓存<br/>毫秒级访问)]
+            ST2[(PostgreSQL<br/>时序数据)]
+            ST3[(InfluxDB<br/>市场数据)]
+        end
+
+        subgraph "RUST加速层"
+            RU1[批量处理器<br/>50K+ candles/s]
+            RU2[数据压缩器<br/>30-50%体积优化]
+            RU3[索引构建器<br/>实时索引]
+        end
+
+        subgraph "服务接口层"
+            API1[实时数据API]
+            API2[历史数据API]
+            API3[订阅管理器]
+        end
+    end
+
+    DS1 --> DC1
+    DS2 --> DC2
+    DS3 --> DC3
+    DS4 --> DC4
+
+    DC1 --> DP1
+    DC2 --> DP2
+    DC3 --> DP3
+    DC4 --> DP4
+
+    DP1 --> RU1
+    DP2 --> RU2
+    DP3 --> RU3
+    DP4 --> ST1
+
+    RU1 --> ST2
+    RU2 --> ST3
+    RU3 --> ST1
+
+    ST1 --> API1
+    ST2 --> API2
+    ST3 --> API3
+
+    classDef rust fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef storage fill:#69db7c,stroke:#2f9e44,color:#fff
+    classDef api fill:#4dabf7,stroke:#1864ab,color:#fff
+    class RU1,RU2,RU3 rust
+    class ST1,ST2,ST3 storage
+    class API1,API2,API3 api
+```
+
+**核心特性**：
+- **多源数据融合**：支持WebSocket、REST API、新闻、情绪等多源数据
+- **实时流处理**：100,000+数据点/秒处理能力
+- **RUST加速**：50,000+K线/秒，3-5倍性能提升
+- **智能缓存**：Redis毫秒级访问，InfluxDB高效存储
+
+### 2. 多智能体系统架构
+
+```mermaid
+graph TB
+    subgraph "多智能体系统架构"
+        subgraph "数据输入层"
+            DI1[市场数据流]
+            DI2[技术指标数据]
+            DI3[新闻情感数据]
+            DI4[历史决策记录]
+        end
+
+        subgraph "AI智能体层"
+            subgraph "Technical Agent"
+                TA1[技术指标分析器]
+                TA2[多时间框架融合]
+                TA3[信号生成器]
+            end
+
+            subgraph "Pattern Agent"
+                PA1[K线形态识别器<br/>30+ patterns]
+                PA2[支撑阻力分析器]
+                PA3[形态强度评估器]
+            end
+
+            subgraph "Trend Agent"
+                TR1[趋势分析器]
+                TR2[多时间框架验证]
+                TR3[反转预测器]
+            end
+
+            subgraph "Risk Agent"
+                RA1[风险评估器]
+                RA2[VaR计算器]
+                RA3[对冲建议器]
+            end
+
+            subgraph "News Agent"
+                NA1[新闻情感分析器]
+                NA2[事件影响评估器]
+                NA3[市场相关性分析器]
+            end
+        end
+
+        subgraph "LLM管理层"
+            LM1[负载均衡器<br/>动态权重分配]
+            LM2[LLM提供商管理器<br/>OpenAI/Claude/DeepSeek]
+            LM3[响应聚合器]
+            LM4[错误处理器]
+        end
+
+        subgraph "决策融合层"
+            DF1[信号聚合器<br/>智能体投票]
+            DF2[冲突解决器<br/>优先级机制]
+            DF3[决策缓存器<br/>Redis-backed]
+            DF4[记忆管理器<br/>100决策历史]
+        end
+
+        subgraph "输出层"
+            OU1[交易决策信号]
+            OU2[置信度评分]
+            OU3[决策解释]
+            OU4[风险提示]
+        end
+    end
+
+    DI1 --> TA1
+    DI2 --> TA2
+    DI3 --> PA1
+    DI4 --> DF3
+
+    TA1 --> DF1
+    PA2 --> DF1
+    TR2 --> DF1
+    RA3 --> DF2
+    NA3 --> DF3
+
+    DF1 --> LM1
+    DF2 --> LM2
+    DF3 --> LM3
+
+    LM1 --> DF1
+    LM2 --> DF2
+    LM3 --> DF3
+    LM4 --> OU4
+
+    DF1 --> OU1
+    DF2 --> OU2
+    DF3 --> OU3
+    DF4 --> OU4
+
+    classDef ai fill:#f783ac,stroke:#a61e4d,color:#fff
+    classDef llm fill:#845ef7,stroke:#5f3dc4,color:#fff
+    classDef decision fill:#4dabf7,stroke:#1864ab,color:#fff
+    class output fill:#69db7c,stroke:#2f9e44,color:#fff
+
+    class TA1,TA2,TA3,PA1,PA2,PA3,TR1,TR2,TR3,RA1,RA2,RA3,NA1,NA2,NA3 ai
+    class LM1,LM2,LM3,LM4 llm
+    class DF1,DF2,DF3,DF4 decision
+    class OU1,OU2,OU3,OU4 output
+```
+
+**核心特性**：
+- **5大专业化智能体**：技术、形态、趋势、风险、新闻智能体
+- **LLM集成**：支持OpenAI、Claude、DeepSeek等多个提供商
+- **智能决策融合**：投票机制、冲突解决、动态权重调整
+- **决策缓存与记忆**：Redis缓存，100决策历史记忆
+
+### 3. 决策引擎架构
+
+```mermaid
+graph TB
+    subgraph "决策引擎架构"
+        subgraph "智能体输入层"
+            AI1[Technical Agent<br/>技术分析信号]
+            AI2[Pattern Agent<br/>形态识别信号]
+            AI3[Trend Agent<br/>趋势分析信号]
+            AI4[Risk Agent<br/>风险评估信号]
+            AI5[News Agent<br/>新闻情绪信号]
+        end
+
+        subgraph "输入预处理层"
+            PR1[信号标准化器<br/>统一信号格式]
+            PR2[质量评估器<br/>置信度评分]
+            PR3[权重计算器<br/>动态权重分配]
+            PR4[优先级排序器<br/>信号重要性]
+        end
+
+        subgraph "信号合成引擎"
+            SE1[信号聚合器<br/>1000+ signals/s]
+            SE2[冲突检测器<br/>信号冲突识别]
+            SE3[权重投票机<br/>加权决策]
+            SE4[置信度计算器<br/>决策可靠性]
+        end
+
+        subgraph "冲突解决机制"
+            CR1[风险评估器<br/>风险优先原则]
+            CR2[历史验证器<br/>成功率统计]
+            CR3[市场环境器<br/>趋势适应]
+            CR4[人工规则引擎<br/>交易策略]
+        end
+
+        subgraph "LLM增强决策"
+            LL1[上下文构建器<br/>市场状态快照]
+            LL2[提示词生成器<br/>智能提示]
+            LL3[LLM调用管理器<br/>多提供商支持]
+            LL4[响应解析器<br/>决策提取]
+        end
+
+        subgraph "决策优化器"
+            OP1[实时优化器<br/>参数调优]
+            OP2[性能评估器<br/>成功率统计]
+            OP3[学习引擎<br/>强化学习]
+            OP4[参数更新器<br/>动态调整]
+        end
+
+        subgraph "输出管理层"
+            OU1[最终决策器<br/>Buy/Sell/Hold]
+            OU2[置信度输出<br/>0-100%]
+            OU3[决策缓存器<br/>5分钟缓存]
+            OU4[解释生成器<br/>决策理由]
+        end
+    end
+
+    AI1 --> PR1
+    AI2 --> PR2
+    AI3 --> PR3
+    AI4 --> PR4
+    AI5 --> PR1
+
+    PR1 --> SE1
+    PR2 --> SE2
+    PR3 --> SE3
+    PR4 --> SE4
+
+    SE1 --> CR1
+    SE2 --> CR2
+    SE3 --> CR3
+    SE4 --> CR4
+
+    CR1 --> LL1
+    CR2 --> LL2
+    CR3 --> LL3
+    CR4 --> LL4
+
+    LL1 --> OP1
+    LL2 --> OP2
+    LL3 --> OP3
+    LL4 --> OP4
+
+    OP1 --> OU1
+    OP2 --> OU2
+    OP3 --> OU3
+    OP4 --> OU4
+
+    classDef input fill:#4dabf7,stroke:#1864ab,color:#fff
+    classDef process fill:#ffd43b,stroke:#fab005,color:#000
+    classDef llm fill:#845ef7,stroke:#5f3dc4,color:#fff
+    classDef output fill:#69db7c,stroke:#2f9e44,color:#fff
+
+    class AI1,AI2,AI3,AI4,AI5 input
+    class PR1,PR2,PR3,PR4,SE1,SE2,SE3,SE4,CR1,CR2,CR3,CR4,OP1,OP2,OP3,OP4 process
+    class LL1,LL2,LL3,LL4 llm
+    class OU1,OU2,OU3,OU4 output
+```
+
+**核心特性**：
+- **高性能处理**：1,000+信号/秒，10ms合成延迟
+- **智能冲突解决**：风险评估、历史验证、市场环境适应
+- **LLM增强**：多提供商支持，智能决策解释
+- **实时优化**：强化学习，动态参数调整
+
+### 4. 执行引擎架构
+
+```mermaid
+graph TB
+    subgraph "执行引擎架构"
+        subgraph "决策输入层"
+            DI1[决策信号<br/>Buy/Sell/Hold]
+            DI2[目标交易对<br/>Symbol Info]
+            DI3[交易参数<br/>Quantity/Price]
+            DI4[风险限制<br/>Max Position]
+        end
+
+        subgraph "订单预处理层"
+            OP1[订单验证器<br/>参数合规性]
+            OP2[风险预检器<br/>100μs评估]
+            OP3[仓位计算器<br/>动态调整]
+            OP4[价格优化器<br/>最优价格]
+        end
+
+        subgraph "RUST执行核心"
+            RU1[订单路由器<br/>1,000+ orders/s]
+            RU2[状态管理器<br/>实时同步]
+            RU3[队列管理器<br/>优先级队列]
+            RU4[批量处理器<br/>批量优化]
+        end
+
+        subgraph "网关适配层"
+            GW1[Binance网关<br/>主要接口]
+            GW2[Freqtrade网关<br/>策略集成]
+            GW3[模拟网关<br/>回测验证]
+            GW4[网关管理器<br/>故障转移]
+        end
+
+        subgraph "风险控制层"
+            RK1[实时监控器<br/>100μs检查]
+            RK2[限制执行器<br/>1,000+ checks/s]
+            RK3[紧急停止器<br/>即时响应]
+            RK4[恢复管理器<br/>自动恢复]
+        end
+
+        subgraph "状态同步层"
+            SS1[订单跟踪器<br/>实时状态]
+            SS2[仓位同步器<br/>账户同步]
+            SS3[成交记录器<br/>历史记录]
+            SS4[对账管理器<br/>一致性检查]
+        end
+
+        subgraph "监控与日志"
+            ML1[性能监控器<br/><50μs延迟]
+            ML2[审计日志器<br/>完整记录]
+            ML3[指标收集器<br/>实时指标]
+            ML4[报告生成器<br/>定期报告]
+        end
+    end
+
+    DI1 --> OP1
+    DI2 --> OP2
+    DI3 --> OP3
+    DI4 --> OP4
+
+    OP1 --> RU1
+    OP2 --> RU2
+    OP3 --> RU3
+    OP4 --> RU4
+
+    RU1 --> GW1
+    RU2 --> GW2
+    RU3 --> GW3
+    RU4 --> GW4
+
+    GW1 --> RK1
+    GW2 --> RK2
+    GW3 --> RK3
+    GW4 --> RK4
+
+    RK1 --> SS1
+    RK2 --> SS2
+    RK3 --> SS3
+    RK4 --> SS4
+
+    SS1 --> ML1
+    SS2 --> ML2
+    SS3 --> ML3
+    SS4 --> ML4
+
+    classDef rust fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef gateway fill:#4dabf7,stroke:#1864ab,color:#fff
+    classDef risk fill:#ffd43b,stroke:#fab005,color:#000
+    classDef monitor fill:#69db7c,stroke:#2f9e44,color:#fff
+
+    class RU1,RU2,RU3,RU4 rust
+    class GW1,GW2,GW3,GW4 gateway
+    class RK1,RK2,RK3,RK4 risk
+    class ML1,ML2,ML3,ML4 monitor
+```
+
+**核心特性**：
+- **超低延迟执行**：平均50μs，P99 < 100μs
+- **高吞吐量**：1,000+订单/秒处理能力
+- **多网关支持**：Binance、Freqtrade、模拟交易
+- **实时风险控制**：100μs风险评估，1,000+检查/秒
+
+### 5. 风险管理架构
+
+```mermaid
+graph TB
+    subgraph "风险管理架构"
+        subgraph "实时计算引擎"
+            RC1[VaR计算器<br/>99% 1-day VaR]
+            RC2[CVaR计算器<br/>条件风险价值]
+            RC3[波动率计算器<br/>实时波动率]
+            RC4[相关性计算器<br/>资产相关性]
+        end
+
+        subgraph "全景监控仪表盘"
+            MD1[实时风险指标<br/>综合风险评分]
+            MD2[仓位监控器<br/>实时仓位追踪]
+            MD3[回撤监控器<br/>最大回撤保护]
+            MD4[集中度监控器<br/>风险分散度]
+        end
+
+        subgraph "多层次限制体系"
+            subgraph "账户级限制"
+                AL1[总仓位限制<br/>95%净资产]
+                AL2[总杠杆限制<br/>3倍杠杆]
+                AL3[日亏损限制<br/>5%日损失]
+                AL4[月回撤限制<br/>15%月回撤]
+            end
+
+            subgraph "策略级限制"
+                SL1[单策略仓位<br/>2%净资产]
+                SL2[单策略杠杆<br/>2倍杠杆]
+                SL3[连续亏损限制<br/>5笔连续]
+                SL4[夏普比率要求<br/>>1.0]
+            end
+
+            subgraph "品种级限制"
+                IL1[单品种仓位<br/>5%净资产]
+                IL2[单品种止损<br/>2%固定止损]
+                IL3[流动性限制<br/>日交易量10%]
+                IL4[波动率限制<br/>日波动50%]
+            end
+        end
+
+        subgraph "动态调整机制"
+            DA1[波动率调整器<br/>Vol Scaling]
+            DA2[相关性调整器<br/>Correlation Scaling]
+            DA3[集中度调整器<br/>Concentration Scaling]
+            DA4[流动性调整器<br/>Liquidity Scaling]
+        end
+
+        subgraph "压力测试引擎"
+            ST1[历史情景测试<br/>历史事件重演]
+            ST2[蒙特卡洛模拟<br/>随机情景]
+            ST3[极端情景测试<br/>Black Swan]
+            ST4[组合压力测试<br/>组合效应]
+        end
+
+        subgraph "实时监控系统"
+            RM1[风险预警器<br/>多级预警]
+            RM2[自动减仓器<br/>智能减仓]
+            RM3[紧急停止器<br/>立即停止]
+            RM4[风险报告器<br/>实时报告]
+        end
+    end
+
+    RC1 --> AL1
+    RC2 --> SL1
+    RC3 --> IL1
+    RC4 --> DA1
+
+    AL1 --> MD1
+    AL2 --> MD2
+    AL3 --> MD3
+    AL4 --> MD4
+
+    SL1 --> DA2
+    SL2 --> DA3
+    SL3 --> DA4
+    SL4 --> ST1
+
+    IL1 --> ST2
+    IL2 --> ST3
+    IL3 --> ST4
+    IL4 --> RM1
+
+    DA1 --> RM2
+    DA2 --> RM3
+    DA3 --> RM4
+    DA4 --> RM1
+
+    ST1 --> RM2
+    ST2 --> RM3
+    ST3 --> RM4
+    ST4 --> RM1
+
+    MD1 --> RM1
+    MD2 --> RM2
+    MD3 --> RM3
+    MD4 --> RM4
+
+    classDef calculate fill:#f783ac,stroke:#a61e4d,color:#fff
+    classDef monitor fill:#4dabf7,stroke:#1864ab,color:#fff
+    classDef limit fill:#ffd43b,stroke:#fab005,color:#000
+    classDef test fill:#845ef7,stroke:#5f3dc4,color:#fff
+    classDef system fill:#69db7c,stroke:#2f9e44,color:#fff
+
+    class RC1,RC2,RC3,RC4 calculate
+    class MD1,MD2,MD3,MD4 monitor
+    class AL1,AL2,AL3,AL4,SL1,SL2,SL3,SL4,IL1,IL2,IL3,IL4 limit
+    class ST1,ST2,ST3,ST4 test
+    class RM1,RM2,RM3,RM4 system
+```
+
+**核心特性**：
+- **实时风险计算**：VaR/CVaR模型，100μs风险评估
+- **多层次限制**：账户、策略、品种三级限制体系
+- **动态调整**：基于波动率、相关性、流动性动态调整
+- **压力测试**：历史情景、蒙特卡洛、极端情景测试
+
+### 6. WebSocket管理架构
+
+```mermaid
+graph TB
+    subgraph "WebSocket管理架构"
+        subgraph "连接管理层"
+            CM1[连接池管理器<br/>10K+ connections]
+            CM2[负载均衡器<br/>智能分配]
+            CM3[健康检查器<br/>心跳检测]
+            CM4[故障转移器<br/>自动切换]
+        end
+
+        subgraph "消息路由系统"
+            MR1[消息分发器<br/>10K+ msg/s]
+            MR2[订阅管理器<br/>topic-based routing]
+            MR3[过滤器引擎<br/>条件过滤]
+            MR4[优先级队列<br/>QoS保证]
+        end
+
+        subgraph "数据处理层"
+            DP1[消息解析器<br/>JSON/Binary]
+            DP2[数据验证器<br/>格式校验]
+            DP3[转换器<br/>格式转换]
+            DP4[压缩器<br/>gzip/deflate]
+        end
+
+        subgraph "RUST高性能核心"
+            RH1[批量处理器<br/>批量消息处理]
+            RH2[零拷贝缓冲区<br/>Ring Buffer]
+            RH3[并行处理器<br/>多核并行]
+            RH4[异步I/O处理<br/>Tokio Runtime]
+        end
+
+        subgraph "缓存机制"
+            CH1[消息缓存器<br/>最近消息缓存]
+            CH2[订阅缓存器<br/>订阅关系缓存]
+            CH3[状态缓存器<br/>连接状态缓存]
+            CH4[数据缓存器<br/>热点数据缓存]
+        end
+
+        subgraph "监控与日志"
+            ML1[性能监控器<br/>延迟/吞吐量]
+            ML2[连接监控器<br/>连接状态]
+            ML3[错误监控器<br/>错误统计]
+            ML4[审计日志器<br/>完整记录]
+        end
+
+        subgraph "安全层"
+            SC1[认证管理器<br/>JWT/OAuth]
+            SC2[权限控制器<br/>RBAC]
+            SC3[加密管理器<br/>TLS/WSS]
+            SC4[限流器<br/>连接限流]
+        end
+    end
+
+    CM1 --> MR1
+    CM2 --> MR2
+    CM3 --> MR3
+    CM4 --> MR4
+
+    MR1 --> DP1
+    MR2 --> DP2
+    MR3 --> DP3
+    MR4 --> DP4
+
+    DP1 --> RH1
+    DP2 --> RH2
+    DP3 --> RH3
+    DP4 --> RH4
+
+    RH1 --> CH1
+    RH2 --> CH2
+    RH3 --> CH3
+    RH4 --> CH4
+
+    CH1 --> ML1
+    CH2 --> ML2
+    CH3 --> ML3
+    CH4 --> ML4
+
+    ML1 --> SC1
+    ML2 --> SC2
+    ML3 --> SC3
+    ML4 --> SC4
+
+    classDef manager fill:#4dabf7,stroke:#1864ab,color:#fff
+    classDef rust fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef cache fill:#69db7c,stroke:#2f9e44,color:#fff
+    classDef security fill:#ffd43b,stroke:#fab005,color:#000
+
+    class CM1,CM2,CM3,CM4,MR1,MR2,MR3,MR4,DP1,DP2,DP3,DP4 manager
+    class RH1,RH2,RH3,RH4 rust
+    class CH1,CH2,CH3,CH4 cache
+    class ML1,ML2,ML3,ML4,SC1,SC2,SC3,SC4 security
+```
+
+**核心特性**：
+- **高并发支持**：10,000+并发连接，< 1ms消息延迟
+- **智能路由**：topic-based路由，优先级队列，QoS保证
+- **RUST加速**：批量处理，零拷贝缓冲区，多核并行
+- **安全保障**：JWT认证，TLS加密，RBAC权限控制
+
+### 7. 技术指标架构
+
+```mermaid
+graph TB
+    subgraph "技术指标架构"
+        subgraph "数据输入层"
+            DI1[实时K线数据<br/>OHLCV]
+            DI2[历史K线数据<br/>批量加载]
+            DI3[Tick数据<br/>逐笔成交]
+            DI4[辅助数据<br/>成交量/持仓量]
+        end
+
+        subgraph "RUST计算核心"
+            subgraph "SIMD优化引擎"
+                SI1[向量化计算器<br/>AVX2/AVX-512]
+                SI2[批量处理器<br/>10K+ candles/batch]
+                SI3[并行计算器<br/>Rayon并行]
+                SI4[内存优化器<br/>零拷贝操作]
+            end
+
+            subgraph "指标计算器"
+                IC1[趋势指标<br/>SMA/EMA/DEMA/TEMA]
+                IC2[动量指标<br/>RSI/Stoch/CCI/Williams]
+                IC3[波动率指标<br/>BB/ATR/Keltner]
+                IC4[成交量指标<br/>OBV/AD/MF/CMF]
+            end
+
+            subgraph "高级指标"
+                AI1[形态识别<br/>30+ patterns]
+                AI2[支撑阻力<br/>自动识别]
+                AI3[谐波模式<br/>Gartley/Butterfly]
+                AI4[多时间框架<br/>MTF分析]
+            end
+        end
+
+        subgraph "缓存与优化"
+            subgraph "多层缓存"
+                CA1[L1缓存<br/>内存缓存]
+                CA2[L2缓存<br/>Redis缓存]
+                CA3[预计算缓存<br/>常用周期]
+                CA4[增量计算<br/>差分更新]
+            end
+
+            subgraph "性能优化"
+                PO1[批量优化<br/>批量计算]
+                PO2[并行优化<br/>多核利用]
+                PO3[内存优化<br/>内存池]
+                PO4[算法优化<br/>增量算法]
+            end
+        end
+
+        subgraph "API接口层"
+            API1[实时计算API<br/>单次计算]
+            API2[批量计算API<br/>批量处理]
+            API3[流式计算API<br/>实时流]
+            API4[历史计算API<br/>历史回测]
+        end
+
+        subgraph "监控与诊断"
+            MT1[性能监控器<br/>计算耗时]
+            MT2[缓存监控器<br/>命中率]
+            MT3[错误监控器<br/>异常处理]
+            MT4[指标分析器<br/>有效性分析]
+        end
+    end
+
+    DI1 --> SI1
+    DI2 --> SI2
+    DI3 --> SI3
+    DI4 --> SI4
+
+    SI1 --> IC1
+    SI2 --> IC2
+    SI3 --> IC3
+    SI4 --> IC4
+
+    IC1 --> AI1
+    IC2 --> AI2
+    IC3 --> AI3
+    IC4 --> AI4
+
+    AI1 --> CA1
+    AI2 --> CA2
+    AI3 --> CA3
+    AI4 --> CA4
+
+    CA1 --> PO1
+    CA2 --> PO2
+    CA3 --> PO3
+    CA4 --> PO4
+
+    PO1 --> API1
+    PO2 --> API2
+    PO3 --> API3
+    PO4 --> API4
+
+    API1 --> MT1
+    API2 --> MT2
+    API3 --> MT3
+    API4 --> MT4
+
+    classDef rust fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef cache fill:#69db7c,stroke:#2f9e44,color:#fff
+    classDef api fill:#4dabf7,stroke:#1864ab,color:#fff
+    classDef monitor fill:#ffd43b,stroke:#fab005,color:#000
+
+    class SI1,SI2,SI3,SI4,IC1,IC2,IC3,IC4,AI1,AI2,AI3,AI4 rust
+    class CA1,CA2,CA3,CA4,PO1,PO2,PO3,PO4 cache
+    class API1,API2,API3,API4 api
+    class MT1,MT2,MT3,MT4 monitor
+```
+
+**核心特性**：
+- **RUST高性能**：50,000+K线/秒，3-5倍性能提升
+- **SIMD优化**：AVX2/AVX-512向量化计算
+- **50+技术指标**：趋势、动量、波动率、成交量指标
+- **多层缓存**：L1内存缓存，L2 Redis缓存，增量计算
+
+### 8. 配置管理架构
+
+```mermaid
+graph TB
+    subgraph "配置管理架构"
+        subgraph "配置层次结构"
+            subgraph "环境配置"
+                EV1[开发环境<br/>development]
+                EV2[测试环境<br/>staging]
+                EV3[生产环境<br/>production]
+                EV4[回测环境<br/>backtest]
+            end
+
+            subgraph "应用配置"
+                AP1[基础配置<br/>app.yaml]
+                AP2[交易配置<br/>trading.yaml]
+                AP3[风险配置<br/>risk.yaml]
+                AP4[智能体配置<br/>agents.yaml]
+            end
+
+            subgraph "模块配置"
+                MO1[数据库配置<br/>database.yaml]
+                MO2[Redis配置<br/>redis.yaml]
+                MO3[LLM配置<br/>llm.yaml]
+                MO4[监控配置<br/>monitoring.yaml]
+            end
+        end
+
+        subgraph "配置提供者"
+            CP1[文件提供者<br/>YAML/JSON]
+            CP2[环境变量<br/>ENV Variables]
+            CP3[数据库提供者<br/>Dynamic Config]
+            CP4[远程配置中心<br/>Consul/Nacos]
+        end
+
+        subgraph "配置管理核心"
+            CM1[配置加载器<br/>多源加载]
+            CM2[配置验证器<br/>Schema验证]
+            CM3[配置合并器<br/>层次合并]
+            CM4[配置解析器<br/>变量替换]
+        end
+
+        subgraph "热更新机制"
+            HU1[文件监控器<br/>fsnotify]
+            HU2[变更检测器<br/>差异对比]
+            HU3[热更新器<br/>无缝更新]
+            HU4[回滚管理器<br/>版本回退]
+        end
+
+        subgraph "版本控制"
+            VC1[版本管理器<br/>Git-like]
+            VC2[变更历史<br/>Audit Log]
+            VC3[分支管理<br/>环境隔离]
+            VC4[发布管理<br/>灰度发布]
+        end
+
+        subgraph "配置API"
+            API1[获取配置<br/>Get Config]
+            API2[更新配置<br/>Update Config]
+            API3[批量操作<br/>Batch Ops]
+            API4[配置查询<br/>Query Config]
+        end
+
+        subgraph "监控与告警"
+            MG1[配置监控器<br/>状态监控]
+            MG2[一致性检查器<br/>Multi-node Sync]
+            MG3[告警管理器<br/>异常告警]
+            MG4[性能监控器<br/>加载性能]
+        end
+    end
+
+    EV1 --> CP1
+    EV2 --> CP2
+    EV3 --> CP3
+    EV4 --> CP4
+
+    CP1 --> CM1
+    CP2 --> CM2
+    CP3 --> CM3
+    CP4 --> CM4
+
+    CM1 --> HU1
+    CM2 --> HU2
+    CM3 --> HU3
+    CM4 --> HU4
+
+    HU1 --> VC1
+    HU2 --> VC2
+    HU3 --> VC3
+    HU4 --> VC4
+
+    VC1 --> API1
+    VC2 --> API2
+    VC3 --> API3
+    VC4 --> API4
+
+    API1 --> MG1
+    API2 --> MG2
+    API3 --> MG3
+    API4 --> MG4
+
+    classDef config fill:#4dabf7,stroke:#1864ab,color:#fff
+    classDef core fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef update fill:#ffd43b,stroke:#fab005,color:#000
+    classDef api fill:#69db7c,stroke:#2f9e44,color:#fff
+
+    class EV1,EV2,EV3,EV4,AP1,AP2,AP3,AP4,MO1,MO2,MO3,MO4,CP1,CP2,CP3,CP4 config
+    class CM1,CM2,CM3,CM4 core
+    class HU1,HU2,HU3,HU4,VC1,VC2,VC3,VC4 update
+    class API1,API2,API3,API4,MG1,MG2,MG3,MG4 api
+```
+
+**核心特性**：
+- **多层次配置**：环境、应用、模块三层配置体系
+- **多源提供者**：文件、环境变量、数据库、远程配置中心
+- **热更新机制**：文件监控，无缝更新，版本回退
+- **5ms快速更新**：配置变更5ms内生效，100%配置验证
+
+### 9. 数据库层架构
+
+```mermaid
+graph TB
+    subgraph "数据库层架构"
+        subgraph "数据库集群"
+            subgraph "PostgreSQL集群"
+                PG1[主节点<br/>读写]
+                PG2[从节点1<br/>只读]
+                PG3[从节点2<br/>只读]
+                PG4[备份节点<br/>WAL归档]
+            end
+
+            subgraph "Redis集群"
+                RD1[Master节点<br/>缓存]
+                RD2[Slave节点1<br/>缓存]
+                RD3[Slave节点2<br/>缓存]
+                RD4[哨兵节点<br/>高可用]
+            end
+
+            subgraph "InfluxDB集群"
+                ID1[主节点<br/>时序数据]
+                ID2[从节点<br/>副本]
+                ID3[Meta节点<br/>元数据]
+                ID4[数据节点<br/>分片]
+            end
+        end
+
+        subgraph "连接管理层"
+            CM1[连接池管理器<br/>Max: 1000]
+            CM2[负载均衡器<br/>读写分离]
+            CM3[故障转移器<br/>自动切换]
+            CM4[健康检查器<br/>心跳检测]
+        end
+
+        subgraph "智能路由"
+            IR1[查询路由器<br/>智能分发]
+            IR2[分片管理器<br/>数据分片]
+            IR3[索引优化器<br/>智能索引]
+            IR4[缓存路由器<br/>缓存策略]
+        end
+
+        subgraph "事务管理"
+            TM1[分布式事务<br/>XA协议]
+            TM2[事务协调器<br/>两阶段提交]
+            TM3[锁管理器<br/>乐观锁]
+            TM4[死锁检测器<br/>自动解决]
+        end
+
+        subgraph "数据同步"
+            DS1[实时同步器<br/>CDC]
+            DS2[批量同步器<br/>ETL]
+            DS3[增量同步器<br/>Change Log]
+            DS4[一致性检查器<br/>数据校验]
+        end
+
+        subgraph "监控与运维"
+            subgraph "性能监控"
+                PM1[查询监控器<br/>慢查询]
+                PM2[锁监控器<br/>锁等待]
+                PM3[缓存监控器<br/>命中率]
+                PM4[连接监控器<br/>连接池]
+            end
+
+            subgraph "告警系统"
+                AL1[阈值告警<br/>性能阈值]
+                AL2[异常告警<br/>错误率]
+                AL3[容量告警<br/>存储容量]
+                AL4[可用性告警<br/>服务可用性]
+            end
+        end
+
+        subgraph "备份与恢复"
+            subgraph "备份策略"
+                BK1[全量备份<br/>每日]
+                BK2[增量备份<br/>每小时]
+                BK3[WAL备份<br/>实时]
+                BK4[跨地域备份<br/>异地容灾]
+            end
+
+            subgraph "恢复机制"
+                RC1[时间点恢复<br/>PITR]
+                RC2[主从切换<br/>故障转移]
+                RC3[数据重建<br/>数据修复]
+                RC4[灾难恢复<br/>DRP]
+            end
+        end
+    end
+
+    PG1 --> CM1
+    PG2 --> CM2
+    PG3 --> CM3
+    PG4 --> CM4
+
+    RD1 --> IR1
+    RD2 --> IR2
+    RD3 --> IR3
+    RD4 --> IR4
+
+    ID1 --> TM1
+    ID2 --> TM2
+    ID3 --> TM3
+    ID4 --> TM4
+
+    CM1 --> DS1
+    CM2 --> DS2
+    CM3 --> DS3
+    CM4 --> DS4
+
+    DS1 --> PM1
+    DS2 --> PM2
+    DS3 --> PM3
+    DS4 --> PM4
+
+    PM1 --> BK1
+    PM2 --> BK2
+    PM3 --> BK3
+    PM4 --> BK4
+
+    BK1 --> RC1
+    BK2 --> RC2
+    BK3 --> RC3
+    BK4 --> RC4
+
+    classDef database fill:#69db7c,stroke:#2f9e44,color:#fff
+    classDef connection fill:#4dabf7,stroke:#1864ab,color:#fff
+    classDef router fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef transaction fill:#ffd43b,stroke:#fab005,color:#000
+    classDef monitor fill:#845ef7,stroke:#5f3dc4,color:#fff
+
+    class PG1,PG2,PG3,PG4,RD1,RD2,RD3,RD4,ID1,ID2,ID3,ID4 database
+    class CM1,CM2,CM3,CM4 connection
+    class IR1,IR2,IR3,IR4 router
+    class TM1,TM2,TM3,TM4,DS1,DS2,DS3,DS4 transaction
+    class PM1,PM2,PM3,PM4,AL1,AL2,AL3,AL4,BK1,BK2,BK3,BK4,RC1,RC2,RC3,RC4 monitor
+```
+
+**核心特性**：
+- **多数据库架构**：PostgreSQL、Redis、InfluxDB集群
+- **智能分片**：数据分片，读写分离，负载均衡
+- **跨数据库事务**：分布式事务，两阶段提交，一致性保证
+- **高性能访问**：50,000+ QPS，< 10ms响应延迟
+
+### 10. API层架构
+
+```mermaid
+graph TB
+    subgraph "API层架构"
+        subgraph "接入层"
+            AL1[负载均衡器<br/>Nginx/HAProxy]
+            AL2[API网关<br/>Kong/Istio]
+            AL3[限流器<br/>Rate Limiter]
+            AL4[认证中心<br/>Auth Service]
+        end
+
+        subgraph "路由层"
+            RT1[路径路由器<br/>Path Router]
+            RT2[版本路由器<br/>Version Router]
+            RT3[方法路由器<br/>Method Router]
+            RT4[参数路由器<br/>Param Router]
+        end
+
+        subgraph "FastAPI服务层"
+            subgraph "REST API服务"
+                RA1[市场数据API<br/>Market Data]
+                RA2[交易API<br/>Trading]
+                RA3[账户API<br/>Account]
+                RA4[分析API<br/>Analytics]
+            end
+
+            subgraph "WebSocket服务"
+                WS1[实时行情<br/>Real-time Quotes]
+                WS2[交易推送<br/>Trade Updates]
+                WS3[事件通知<br/>Event Stream]
+                WS4[管理界面<br/>Admin Panel]
+            end
+
+            subgraph "中间件层"
+                MW1[认证中间件<br/>JWT/OAuth]
+                MW2[权限中间件<br/>RBAC]
+                MW3[日志中间件<br/>Logging]
+                MW4[监控中间件<br/>Metrics]
+            end
+        end
+
+        subgraph "业务逻辑层"
+            BL1[市场数据服务<br/>Data Service]
+            BL2[订单管理服务<br/>Order Service]
+            BL3[风险管理服务<br/>Risk Service]
+            BL4[分析服务<br/>Analysis Service]
+        end
+
+        subgraph "数据访问层"
+            DA1[缓存访问器<br/>Redis Cache]
+            DA2[数据库访问器<br/>SQL Access]
+            DA3[时序数据访问器<br/>TSDB Access]
+            DA4[文件存储访问器<br/>File Storage]
+        end
+
+        subgraph "监控与运维"
+            subgraph "性能监控"
+                PF1[响应时间监控<br/>Response Time]
+                PF2[吞吐量监控<br/>Throughput]
+                PF3[错误率监控<br/>Error Rate]
+                PF4[资源使用监控<br/>Resource Usage]
+            end
+
+            subgraph "链路追踪"
+                TR1[请求追踪<br/>Request Trace]
+                TR2[依赖追踪<br/>Dependency Trace]
+                TR3[性能分析<br/>Performance Profile]
+                TR4[瓶颈分析<br/>Bottleneck Analysis]
+            end
+        end
+    end
+
+    AL1 --> RT1
+    AL2 --> RT2
+    AL3 --> RT3
+    AL4 --> RT4
+
+    RT1 --> RA1
+    RT2 --> WS1
+    RT3 --> MW1
+    RT4 --> WS2
+
+    RA1 --> BL1
+    RA2 --> BL2
+    RA3 --> BL3
+    RA4 --> BL4
+
+    WS1 --> MW2
+    WS2 --> MW3
+    WS3 --> MW4
+    WS4 --> RA1
+
+    MW1 --> DA1
+    MW2 --> DA2
+    MW3 --> DA3
+    MW4 --> DA4
+
+    DA1 --> PF1
+    DA2 --> PF2
+    DA3 --> PF3
+    DA4 --> PF4
+
+    PF1 --> TR1
+    PF2 --> TR2
+    PF3 --> TR3
+    PF4 --> TR4
+
+    classDef gateway fill:#4dabf7,stroke:#1864ab,color:#fff
+    classDef service fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef business fill:#69db7c,stroke:#2f9e44,color:#fff
+    classDef data fill:#ffd43b,stroke:#fab005,color:#000
+    classDef monitor fill:#845ef7,stroke:#5f3dc4,color:#fff
+
+    class AL1,AL2,AL3,AL4,RT1,RT2,RT3,RT4 gateway
+    class RA1,RA2,RA3,RA4,WS1,WS2,WS3,WS4,MW1,MW2,MW3,MW4 service
+    class BL1,BL2,BL3,BL4 business
+    class DA1,DA2,DA3,DA4 data
+    class PF1,PF2,PF3,PF4,TR1,TR2,TR3,TR4 monitor
+```
+
+**核心特性**：
+- **高性能API**：10,000+ QPS，< 100ms响应时间
+- **RESTful与WebSocket**：完整的REST API和实时WebSocket服务
+- **认证与授权**：JWT/OAuth认证，RBAC权限控制
+- **全链路监控**：请求追踪，性能分析，瓶颈识别
+
+所有架构图的详细文档可在 [docs/modules](./docs/modules) 目录下查看。
+
 ## 🚀 部署架构
 
 ### 生产环境架构
