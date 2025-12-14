@@ -1,0 +1,43 @@
+# 交易决策摘要
+
+## 基本信息
+- 交易对: {symbol}
+- 时间框架: {timeframe}
+- 决策时间: {timestamp}
+- 决策ID: {decision_id}
+
+## 决策结果
+- 行动: {action}
+- 置信度: {confidence}%
+- 仓位大小: ${position_size_usd}
+- 杠杆: {leverage}x
+
+## 风险控制
+- 止损价格: ${stop_loss}
+- 止盈价格: ${take_profit}
+
+## 分级止盈策略
+- 第一层: {tier1_target} (平仓{tier1_ratio}%)
+- 第二层: {tier2_target} (平仓{tier2_ratio}%)
+- 第三层: {tier3_target} (平仓{tier3_ratio}%)
+
+## 分析摘要
+### 技术指标
+{indicator_analysis}
+
+### 形态分析
+{pattern_analysis}
+
+### 趋势分析
+{trend_analysis}
+
+## 决策理由
+{reason}
+
+## 风险提示
+{risk_warning}
+
+## 执行状态
+- 状态: {status}
+- 创建时间: {created_at}
+- 更新时间: {updated_at}
