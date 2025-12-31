@@ -188,7 +188,7 @@ graph TB
 ### 3.1 整体架构图
 
 ```mermaid
-graph TB
+graph LR
     subgraph Frontend[Frontend Layer]
         Web[React Frontend]
     end
@@ -340,7 +340,7 @@ graph TB
 #### 核心流程
 
 ```mermaid
-flowchart TD
+flowchart LR
     Start([Start Trader]) --> Init[Init Config]
     Init --> FetchBalance[Fetch Balance]
     FetchBalance --> LoadStrategy[Load Strategy]
@@ -475,7 +475,7 @@ sequenceDiagram
 #### 回测架构
 
 ```mermaid
-graph TB
+graph LR
     subgraph BacktestExecution[Backtest Execution Flow]
         Start[Create Runner] --> Init[Init Config]
         Init --> LoadFeed[Load Data Feed]
@@ -549,7 +549,7 @@ graph TB
 #### 加密架构
 
 ```mermaid
-graph TB
+graph LR
     subgraph CryptoService[Encryption Service]
         RSAKey[RSA Key Pair]
         AESKey[AES Data Key]
@@ -657,7 +657,7 @@ sequenceDiagram
 #### 数据源架构
 
 ```mermaid
-graph TB
+graph LR
     subgraph DataProvider[Data Provider]
         AI500[AI500 Coin Pool]
         OITop[OI Top Ranking]
