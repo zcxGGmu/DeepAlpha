@@ -189,58 +189,66 @@ graph TB
 
 ```mermaid
 graph TB
-    subgraph 前端层
-        Web[React 前端]
+    subgraph Frontend[Frontend Layer]
+        Web[React Frontend]
+    end
     
-    subgraph API层
-        Server[Gin HTTP 服务器]
-        Auth[认证中间件]
-        CryptoHandler[加密处理器]
-        DebateHandler[辩论处理器]
+    subgraph APILayer[API Layer]
+        Server[Gin HTTP Server]
+        Auth[Auth Middleware]
+        CryptoHandler[Crypto Handler]
+        DebateHandler[Debate Handler]
+    end
     
-    subgraph 业务逻辑层
-        TraderManager[交易者管理器]
-        BacktestManager[回测管理器]
-        StrategyEngine[策略引擎]
-        DebateManager[辩论管理器]
+    subgraph BusinessLayer[Business Logic Layer]
+        TraderManager[Trader Manager]
+        BacktestManager[Backtest Manager]
+        StrategyEngine[Strategy Engine]
+        DebateManager[Debate Manager]
+    end
     
-    subgraph 数据访问层
-        Store[数据存储]
-        UserStore[用户存储]
-        TraderStore[交易者存储]
-        StrategyStore[策略存储]
-        BacktestStore[回测存储]
-        OrderStore[订单存储]
-        PositionStore[持仓存储]
-        EquityStore[权益存储]
+    subgraph DataAccessLayer[Data Access Layer]
+        Store[Data Store]
+        UserStore[User Store]
+        TraderStore[Trader Store]
+        StrategyStore[Strategy Store]
+        BacktestStore[Backtest Store]
+        OrderStore[Order Store]
+        PositionStore[Position Store]
+        EquityStore[Equity Store]
+    end
     
-    subgraph 交易所适配层
-        BinanceTrader[Binance 适配器]
-        BybitTrader[Bybit 适配器]
-        OKXTrader[OKX 适配器]
-        BitgetTrader[Bitget 适配器]
-        HyperliquidTrader[Hyperliquid 适配器]
-        AsterTrader[Aster 适配器]
-        LighterTrader[Lighter 适配器]
+    subgraph ExchangeAdapterLayer[Exchange Adapter Layer]
+        BinanceTrader[Binance Adapter]
+        BybitTrader[Bybit Adapter]
+        OKXTrader[OKX Adapter]
+        BitgetTrader[Bitget Adapter]
+        HyperliquidTrader[Hyperliquid Adapter]
+        AsterTrader[Aster Adapter]
+        LighterTrader[Lighter Adapter]
+    end
     
-    subgraph AI 客户端层
-        MCPClient[MCP AI 客户端]
-        DeepSeekClient[DeepSeek 客户端]
-        QwenClient[Qwen 客户端]
-        OpenAIClient[OpenAI 客户端]
-        ClaudeClient[Claude 客户端]
-        GeminiClient[Gemini 客户端]
-        GrokClient[Grok 客户端]
-        KimiClient[Kimi 客户端]
+    subgraph AIClientLayer[AI Client Layer]
+        MCPClient[MCP AI Client]
+        DeepSeekClient[DeepSeek Client]
+        QwenClient[Qwen Client]
+        OpenAIClient[OpenAI Client]
+        ClaudeClient[Claude Client]
+        GeminiClient[Gemini Client]
+        GrokClient[Grok Client]
+        KimiClient[Kimi Client]
+    end
     
-    subgraph 外部服务层
-        MarketAPI[市场数据 API]
-        CoinAnk[CoinAnk 数据源]
-        QuantAPI[量化数据 API]
-        OIRankingAPI[OI 排名 API]
+    subgraph ExternalServiceLayer[External Service Layer]
+        MarketAPI[Market Data API]
+        CoinAnk[CoinAnk Data Source]
+        QuantAPI[Quant Data API]
+        OIRankingAPI[OI Ranking API]
+    end
     
-    subgraph 数据存储层
-        SQLite[(SQLite 数据库)]
+    subgraph DataStorageLayer[Data Storage Layer]
+        SQLite[(SQLite Database)]
+    end
     
     Web --> Server
     Server --> TraderManager
@@ -333,26 +341,26 @@ graph TB
 
 ```mermaid
 flowchart TD
-    Start([启动交易者]) --> Init[初始化配置]
-    Init --> FetchBalance[获取账户余额]
-    FetchBalance --> LoadStrategy[加载策略配置]
-    LoadStrategy --> MainLoop[主循环]
+    Start([Start Trader]) --> Init[Init Config]
+    Init --> FetchBalance[Fetch Balance]
+    FetchBalance --> LoadStrategy[Load Strategy]
+    LoadStrategy --> MainLoop[Main Loop]
     
-    MainLoop --> CheckRisk[检查风险控制]
-    CheckRisk --> |风险触发| Pause[暂停交易]
-    Pause --> Wait[等待恢复]
+    MainLoop --> CheckRisk[Check Risk Control]
+    CheckRisk --> |Risk Triggered| Pause[Pause Trading]
+    Pause --> Wait[Wait for Resume]
     Wait --> MainLoop
     
-    CheckRisk --> |风险正常| BuildContext[构建交易上下文]
-    BuildContext --> FetchMarketData[获取市场数据]
-    FetchMarketData --> CallAI[调用 AI 决策]
-    CallAI --> ParseResponse[解析 AI 响应]
-    ParseResponse --> SortDecisions[排序决策]
-    SortDecisions --> Execute[执行交易]
-    Execute --> SaveRecord[保存记录]
+    CheckRisk --> |Risk Normal| BuildContext[Build Trading Context]
+    BuildContext --> FetchMarketData[Fetch Market Data]
+    FetchMarketData --> CallAI[Call AI Decision]
+    CallAI --> ParseResponse[Parse AI Response]
+    ParseResponse --> SortDecisions[Sort Decisions]
+    SortDecisions --> Execute[Execute Trade]
+    Execute --> SaveRecord[Save Record]
     SaveRecord --> MainLoop
     
-    Execute --> |执行失败| LogError[记录错误]
+    Execute --> |Execution Failed| LogError[Log Error]
     LogError --> MainLoop
 ```
 
@@ -384,27 +392,27 @@ sequenceDiagram
     participant AI as MCPClient
     participant DB as Store
     
-    SE->>M: 获取币种候选
-    M-->>SE: 币种列表
+    SE->>M: Get Coin Candidates
+    M-->>SE: Coin List
     
-    SE->>M: 获取多时间框架市场数据
-    M-->>SE: K线数据
+    SE->>M: Get Multi-TF Market Data
+    M-->>SE: Kline Data
     
-    SE->>M: 获取量化数据
-    M-->>SE: 资金流向、持仓变化
+    SE->>M: Get Quant Data
+    M-->>SE: Fund Flow, Position Changes
     
-    SE->>M: 获取 OI 排名
-    M-->>SE: 持仓增长排名
+    SE->>M: Get OI Ranking
+    M-->>SE: Position Growth Ranking
     
-    SE->>SE: 构建系统提示词
-    SE->>SE: 构建用户提示词
+    SE->>SE: Build System Prompt
+    SE->>SE: Build User Prompt
     
-    SE->>AI: 调用 AI API
-    AI-->>SE: 决策响应
+    SE->>AI: Call AI API
+    AI-->>SE: Decision Response
     
-    SE->>SE: 解析响应
-    SE->>SE: 验证决策
-    SE->>DB: 保存决策记录
+    SE->>SE: Parse Response
+    SE->>SE: Validate Decision
+    SE->>DB: Save Decision Record
 ```
 
 #### 提示词构建策略
@@ -468,25 +476,25 @@ sequenceDiagram
 
 ```mermaid
 graph TB
-    subgraph 回测执行流程
-        Start[创建 Runner] --> Init[初始化配置]
-        Init --> LoadFeed[加载数据源]
-        LoadFeed --> CreateAccount[创建模拟账户]
-        CreateAccount --> CreateEngine[创建策略引擎]
-        CreateEngine --> StartLoop[启动主循环]
+    subgraph BacktestExecution[Backtest Execution Flow]
+        Start[Create Runner] --> Init[Init Config]
+        Init --> LoadFeed[Load Data Feed]
+        LoadFeed --> CreateAccount[Create Sim Account]
+        CreateAccount --> CreateEngine[Create Strategy Engine]
+        CreateEngine --> StartLoop[Start Main Loop]
         
-        StartLoop --> Step[单步执行]
-        Step --> BuildContext[构建决策上下文]
-        BuildContext --> FetchMarket[获取市场数据]
-        FetchMarket --> CallAI[调用 AI 决策]
-        CallAI --> Execute[执行交易]
-        Execute --> UpdateState[更新状态]
-        UpdateState --> SaveCheckpoint[保存检查点]
+        StartLoop --> Step[Step Execution]
+        Step --> BuildContext[Build Decision Context]
+        BuildContext --> FetchMarket[Fetch Market Data]
+        FetchMarket --> CallAI[Call AI Decision]
+        CallAI --> Execute[Execute Trade]
+        Execute --> UpdateState[Update State]
+        UpdateState --> SaveCheckpoint[Save Checkpoint]
         SaveCheckpoint --> Step
         
-        Step --> |完成| Complete[回测完成]
-        Step --> |爆仓| Liquidated[账户爆仓]
-        Step --> |错误| Failed[回测失败]
+        Step --> |Complete| Complete[Backtest Complete]
+        Step --> |Liquidated| Liquidated[Account Liquidated]
+        Step --> |Failed| Failed[Backtest Failed]
     end
 ```
 
@@ -542,18 +550,18 @@ graph TB
 
 ```mermaid
 graph TB
-    subgraph 加密服务
-        RSAKey[RSA 密钥对]
-        AESKey[AES 数据密钥]
+    subgraph CryptoService[Encryption Service]
+        RSAKey[RSA Key Pair]
+        AESKey[AES Data Key]
         
-        RSAKey --> EncryptForStorage[存储加密]
+        RSAKey --> EncryptForStorage[Storage Encryption]
         AESKey --> EncryptForStorage
         
-        RSAKey --> DecryptPayload[传输解密]
+        RSAKey --> DecryptPayload[Transmission Decryption]
         AESKey --> DecryptPayload
         
-        EncryptForStorage --> EncryptedData[加密数据]
-        DecryptPayload --> Plaintext[明文数据]
+        EncryptForStorage --> EncryptedData[Encrypted Data]
+        DecryptPayload --> Plaintext[Plaintext Data]
     end
 ```
 
@@ -598,28 +606,28 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant User as 用户
-    participant Auth as Auth 模块
-    participant JWT as JWT 验证
-    participant OTP as OTP 验证
-    participant Blacklist as 令牌黑名单
+    participant User as User
+    participant Auth as Auth Module
+    participant JWT as JWT Validation
+    participant OTP as OTP Validation
+    participant Blacklist as Token Blacklist
     
-    User->>Auth: 注册/登录
+    User->>Auth: Register/Login
     Auth->>Auth: HashPassword(BCrypt)
     Auth->>OTP: GenerateOTPSecret
     OTP-->>Auth: Secret + QRCode
     Auth-->>User: JWT Token + QRCode
     
-    User->>Auth: 访问受保护资源
+    User->>Auth: Access Protected Resource
     Auth->>JWT: ValidateJWT
     JWT-->>Auth: Claims
     Auth->>Blacklist: IsTokenBlacklisted
-    Blacklist-->>Auth: 状态
-    Auth-->>User: 允许/拒绝
+    Blacklist-->>Auth: Status
+    Auth-->>User: Allow/Deny
     
-    User->>Auth: 登出
+    User->>Auth: Logout
     Auth->>Blacklist: BlacklistToken
-    Blacklist-->>Auth: 完成
+    Blacklist-->>Auth: Done
 ```
 
 #### 核心功能
@@ -650,20 +658,20 @@ sequenceDiagram
 
 ```mermaid
 graph TB
-    subgraph 数据提供者
-        AI500[AI500 币池]
-        OITop[OI Top 排名]
-        OIRanking[OI 排名数据]
+    subgraph DataProvider[Data Provider]
+        AI500[AI500 Coin Pool]
+        OITop[OI Top Ranking]
+        OIRanking[OI Ranking Data]
         
-        AI500 --> Merged[合并数据]
+        AI500 --> Merged[Merged Data]
         OITop --> Merged
-        OIRanking --> StrategyEngine[策略引擎]
+        OIRanking --> StrategyEngine[Strategy Engine]
     end
     
-    subgraph 外部 API
+    subgraph ExternalAPI[External API]
         AI500API[AI500 API]
         OITopAPI[OI Top API]
-        OIRankingAPI[OI 排名 API]
+        OIRankingAPI[OI Ranking API]
     end
     
     AI500 --> AI500API
@@ -1038,78 +1046,78 @@ func (r *Runner) executeDecision(dec decision.Decision, priceMap map[string]floa
 
 ```mermaid
 sequenceDiagram
-    participant Timer as 定时器
+    participant Timer as Timer
     participant AT as AutoTrader
     participant SE as StrategyEngine
     participant Market as MarketAPI
     participant AI as MCPClient
-    participant Trader as 交易所适配器
+    participant Trader as Exchange Adapter
     participant DB as Store
     
-    Timer->>AT: 触发扫描周期
-    AT->>SE: 获取币种候选
-    SE->>Market: 请求市场数据
-    Market-->>SE: K线、OI、量化数据
-    SE->>SE: 构建提示词
-    SE->>AI: 调用 AI API
-    AI-->>SE: 决策响应（CoT + JSON）
-    SE->>SE: 解析并验证决策
-    SE->>Trader: 执行开仓
-    Trader->>DB: 保存订单
-    Trader->>DB: 保存持仓
-    SE->>DB: 保存决策记录
+    Timer->>AT: Trigger Scan Cycle
+    AT->>SE: Get Coin Candidates
+    SE->>Market: Request Market Data
+    Market-->>SE: Kline, OI, Quant Data
+    SE->>SE: Build Prompt
+    SE->>AI: Call AI API
+    AI-->>SE: Decision Response (CoT + JSON)
+    SE->>SE: Parse and Validate Decision
+    SE->>Trader: Execute Open Position
+    Trader->>DB: Save Order
+    Trader->>DB: Save Position
+    SE->>DB: Save Decision Record
 ```
 
 ### 6.2 回测流程
 
 ```mermaid
 sequenceDiagram
-    participant API as API层
+    participant API as API Layer
     participant BM as BacktestManager
     participant Runner as Runner
     participant AI as MCPClient
     participant DB as BacktestStore
     
-    API->>BM: 创建回测任务
-    BM->>BM: 验证配置
-    BM->>Runner: 创建 Runner
-    Runner->>Runner: 恢复检查点（如存在）
-    loop 每个历史周期
-        Runner->>AI: 获取 AI 决策
-        AI-->>Runner: 交易决策
-        Runner->>Runner: 执行交易
-        Runner->>DB: 保存权益快照
-        Runner->>DB: 保存决策记录
+    API->>BM: Create Backtest Task
+    BM->>BM: Validate Config
+    BM->>Runner: Create Runner
+    Runner->>Runner: Restore Checkpoint (if exists)
+    loop Each Historical Cycle
+        Runner->>AI: Get AI Decision
+        AI-->>Runner: Trading Decision
+        Runner->>Runner: Execute Trade
+        Runner->>DB: Save Equity Snapshot
+        Runner->>DB: Save Decision Record
     end
-    Runner->>BM: 完成通知
-    BM->>DB: 保存最终指标
+    Runner->>BM: Complete Notification
+    BM->>DB: Save Final Metrics
 ```
 
 ### 6.3 辩论流程
 
 ```mermaid
 sequenceDiagram
-    participant API as API层
+    participant API as API Layer
     participant DH as DebateHandler
     participant AI1 as AI Agent 1 (Bull)
     participant AI2 as AI Agent 2 (Bear)
     participant AI3 as AI Agent 3 (Analyst)
     participant TM as TraderManager
     
-    API->>DH: 创建辩论会话
-    DH->>AI1: 发送 Bull 角色提示
-    DH->>AI2: 发送 Bear 角色提示
-    DH->>AI3: 发送 Analyst 角色提示
+    API->>DH: Create Debate Session
+    DH->>AI1: Send Bull Role Prompt
+    DH->>AI2: Send Bear Role Prompt
+    DH->>AI3: Send Analyst Role Prompt
     
-    par 多轮辩论
-        AI1->>DH: Bull 论点
-        AI2->>DH: Bear 论点
-        AI3->>DH: 分析观点
+    par Multi-Round Debate
+        AI1->>DH: Bull Arguments
+        AI2->>DH: Bear Arguments
+        AI3->>DH: Analysis Viewpoints
     end
     
-    DH->>DH: 统计投票
-    DH->>TM: 执行共识交易
-    TM->>Trader: 执行决策
+    DH->>DH: Count Votes
+    DH->>TM: Execute Consensus Trade
+    TM->>Trader: Execute Decision
 ```
 
 ---
