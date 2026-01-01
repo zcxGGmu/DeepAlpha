@@ -2903,553 +2903,1847 @@ class BacktestEngine:
 
 ### 6.1 第一阶段：基础设施搭建（2周）
 
-#### 6.1.1 项目初始化
+#### 6.1.1 项目初始化（3天）
 
-**任务**:
-1. 创建项目目录结构
-2. 配置开发环境
-3. 初始化Git仓库
-4. 编写README文档
+**任务清单**:
+1. 创建项目目录结构（4小时）
+   - 创建后端目录结构：app/, agents/, dataflows/, graph/, strategies/, backtest/, utils/, config/, tests/
+   - 创建前端目录结构：frontend/src/, frontend/public/, frontend/components/
+   - 创建配置目录：config/, .vscode/, .github/
+   - 创建文档目录：docs/, docs/api/, docs/user/
+
+2. 配置开发环境（8小时）
+   - Python 3.11+ 环境配置
+   - Node.js 20+ 环境配置
+   - MongoDB 7.0 安装配置
+   - Redis 7.0 安装配置
+   - ChromaDB 安装配置
+   - Docker 环境配置
+
+3. 初始化Git仓库（2小时）
+   - 初始化Git仓库
+   - 配置.gitignore文件
+   - 配置GitHub Actions CI/CD
+   - 配置pre-commit hooks
+   - 配置commitlint
+
+4. 编写基础文档（4小时）
+   - README.md（项目介绍、快速开始、开发指南）
+   - CONTRIBUTING.md（贡献指南）
+   - LICENSE文件选择
+   - CHANGELOG.md模板
+
+5. 配置开发工具（2小时）
+   - VSCode配置（settings.json, launch.json）
+   - ESLint配置
+   - Prettier配置
+   - Python代码格式化工具（black, isort）
 
 **交付物**:
 - 完整的项目目录结构
-- requirements.txt
-- .env.example
+- requirements.txt（后端依赖）
+- package.json（前端依赖）
+- .env.example（环境变量示例）
 - README.md
+- .gitignore
+- .vscode/settings.json
+- .github/workflows/ci.yml
+- pre-commit-config.yaml
+- .commitlintrc.js
 
-#### 6.1.2 数据库设计
+**验收标准**:
+- [ ] 项目目录结构符合设计规范
+- [ ] 所有依赖能正常安装
+- [ ] Git仓库能正常提交和推送
+- [ ] CI/CD流程能正常运行
+- [ ] 代码格式化工具能正常工作
 
-**任务**:
-1. 设计MongoDB数据模型
-2. 设计Redis数据结构
-3. 设计ChromaDB集合结构
-4. 编写数据库迁移脚本
+**风险点**:
+- 环境配置可能因操作系统不同而遇到问题
+- 依赖版本兼容性问题
+
+**依赖关系**:
+- 无前置依赖
+
+#### 6.1.2 数据库设计（4天）
+
+**任务清单**:
+1. MongoDB数据模型设计（12小时）
+   - 设计用户集合（users）
+     - 字段：_id, username, email, password_hash, created_at, updated_at, settings
+     - 索引：username（唯一索引）, email（唯一索引）
+   - 设计交易者集合（traders）
+     - 字段：_id, user_id, name, ai_model, exchange, strategy, risk_management, initial_capital, status, created_at, updated_at
+     - 索引：user_id, status, created_at
+   - 设计订单集合（orders）
+     - 字段：_id, trader_id, symbol, side, order_type, quantity, price, status, create_time, update_time
+     - 索引：trader_id, symbol, status, create_time
+   - 设计持仓集合（positions）
+     - 字段：_id, trader_id, symbol, quantity, avg_price, total_cost, status, created_at, updated_at
+     - 索引：trader_id, symbol, status
+   - 设计交易记录集合（trades）
+     - 字段：_id, trader_id, symbol, side, price, quantity, commission, profit, timestamp
+     - 索引：trader_id, symbol, timestamp
+   - 设计交易者历史集合（trader_history）
+     - 字段：_id, trader_id, date, equity, capital, positions_value, pnl, pnl_pct
+     - 索引：trader_id, date
+   - 设计分析记录集合（analysis_records）
+     - 字段：_id, symbol, analyst_type, result, created_at
+     - 索引：symbol, analyst_type, created_at
+   - 设计回测记录集合（backtest_records）
+     - 字段：_id, strategy_name, start_date, end_date, initial_capital, metrics, created_at
+     - 索引：strategy_name, created_at
+
+2. Redis数据结构设计（4小时）
+   - 设计缓存键命名规范
+   - 设计股票数据缓存结构（stock:{symbol}）
+   - 设计行情数据缓存结构（market:{symbol}）
+   - 设计分析结果缓存结构（analysis:{symbol}:{date}）
+   - 设计限流计数器（rate_limit:{user_id}:{endpoint}）
+   - 设计会话存储（session:{session_id}）
+
+3. ChromaDB集合结构设计（2小时）
+   - 设计agent_memory集合
+     - 元数据：agent_id, conversation_id, timestamp
+   - 设计knowledge_base集合
+     - 元数据：source, category, created_at
+
+4. 编写数据库迁移脚本（6小时）
+   - 编写MongoDB初始化脚本（init_mongodb.py）
+   - 编写索引创建脚本（create_indexes.py）
+   - 编写数据清理脚本（cleanup_data.py）
+   - 编写数据备份脚本（backup_data.py）
+   - 编写数据恢复脚本（restore_data.py）
+
+5. 编写数据库操作封装（6小时）
+   - 编写MongoDB连接管理（app/core/database.py）
+   - 编写Redis连接管理（app/core/redis_client.py）
+   - 编写ChromaDB连接管理（app/core/chroma_client.py）
+   - 编写数据库异常处理
 
 **交付物**:
-- 数据库设计文档
-- 数据模型定义
-- 迁移脚本
+- docs/database/mongodb_schema.md（MongoDB数据模型文档）
+- docs/database/redis_schema.md（Redis数据结构文档）
+- docs/database/chroma_schema.md（ChromaDB集合结构文档）
+- scripts/db/init_mongodb.py（MongoDB初始化脚本）
+- scripts/db/create_indexes.py（索引创建脚本）
+- scripts/db/backup_data.py（数据备份脚本）
+- scripts/db/restore_data.py（数据恢复脚本）
+- app/core/database.py（MongoDB连接管理）
+- app/core/redis_client.py（Redis连接管理）
+- app/core/chroma_client.py（ChromaDB连接管理）
 
-#### 6.1.3 配置管理
+**验收标准**:
+- [ ] 所有数据模型设计文档完整
+- [ ] 所有索引创建成功
+- [ ] 数据库连接池配置合理
+- [ ] 数据备份和恢复功能正常
+- [ ] 数据库操作封装能正常使用
 
-**任务**:
-1. 实现配置加载模块
-2. 实现环境变量管理
-3. 实现动态配置更新
-4. 编写配置验证
+**风险点**:
+- 数据模型设计可能需要根据业务需求调整
+- 索引设计可能影响查询性能
+- 数据库连接池配置不当可能导致性能问题
+
+**依赖关系**:
+- 依赖6.1.1项目初始化完成
+
+#### 6.1.3 配置管理（3天）
+
+**任务清单**:
+1. 实现配置加载模块（6小时）
+   - 创建配置基类（config/base.py）
+   - 实现默认配置（config/default_config.py）
+   - 实现运行时配置（config/runtime_settings.py）
+   - 实现配置优先级：环境变量 > 配置文件 > 默认值
+   - 实现配置热更新
+
+2. 实现环境变量管理（4小时）
+   - 创建.env.example文件
+   - 实现环境变量加载（app/core/config.py）
+   - 实现环境变量验证
+   - 实现敏感信息加密存储
+
+3. 实现动态配置更新（4小时）
+   - 实现配置变更监听
+   - 实现配置变更通知
+   - 实现配置变更日志
+   - 实现配置回滚机制
+
+4. 编写配置验证（4小时）
+   - 实现配置Schema验证（使用Pydantic）
+   - 实现配置范围检查
+   - 实现配置依赖检查
+   - 实现配置错误提示
+
+5. 配置文档编写（2小时）
+   - 编写配置说明文档
+   - 编写配置示例
+   - 编写配置最佳实践
 
 **交付物**:
-- config/default_config.py
-- config/runtime_settings.py
-- 配置验证模块
+- config/base.py（配置基类）
+- config/default_config.py（默认配置）
+- config/runtime_settings.py（运行时配置）
+- app/core/config.py（配置管理模块）
+- .env.example（环境变量示例）
+- docs/configuration/config_guide.md（配置指南）
+- docs/configuration/env_vars.md（环境变量说明）
+
+**验收标准**:
+- [ ] 配置加载功能正常
+- [ ] 环境变量能正确读取
+- [ ] 配置验证功能正常
+- [ ] 配置热更新功能正常
+- [ ] 配置文档完整清晰
+
+**风险点**:
+- 配置热更新可能导致运行时错误
+- 配置验证可能过于严格影响灵活性
+
+**依赖关系**:
+- 依赖6.1.1项目初始化完成
+- 依赖6.1.2数据库设计完成
 
 ### 6.2 第二阶段：数据层开发（3周）
 
-#### 6.2.1 数据源适配器
+#### 6.2.1 数据源适配器（5天）
 
-**任务**:
-1. 实现Tushare数据源适配器
-2. 实现AKShare数据源适配器
-3. 实现BaoStock数据源适配器
-4. 实现港股数据源适配器
+**任务清单**:
+1. 实现Tushare数据源适配器（12小时）
+   - 实现Tushare API客户端封装
+   - 实现A股实时行情获取
+   - 实现A股历史数据获取
+   - 实现A股财务数据获取
+   - 实现A股新闻数据获取
+   - 实现数据格式标准化
+   - 实现异常处理和重试机制
+   - 实现请求限流
 
-**交付物**:
-- dataflows/providers/china/tushare_provider.py
-- dataflows/providers/china/akshare_provider.py
-- dataflows/providers/china/baostock_provider.py
-- dataflows/providers/hk/akshare_hk_provider.py
+2. 实现AKShare数据源适配器（12小时）
+   - 实现AKShare API客户端封装
+   - 实现A股实时行情获取
+   - 实现A股历史数据获取
+   - 实现A股财务数据获取
+   - 实现数据格式标准化
+   - 实现异常处理和重试机制
+   - 实现请求限流
 
-#### 6.2.2 数据源管理器
+3. 实现BaoStock数据源适配器（8小时）
+   - 实现BaoStock API客户端封装
+   - 实现A股历史数据获取
+   - 实现A股财务数据获取
+   - 实现数据格式标准化
+   - 实现异常处理和重试机制
 
-**任务**:
-1. 实现数据源管理器
-2. 实现数据源优先级配置
-3. 实现数据源降级机制
-4. 实现数据源健康检查
-
-**交付物**:
-- dataflows/data_source_manager.py
-- 数据源配置模块
-- 健康检查模块
-
-#### 6.2.3 缓存适配器
-
-**任务**:
-1. 实现MongoDB缓存适配器
-2. 实现缓存过期机制
-3. 实现缓存预热
-4. 实现缓存统计
-
-**交付物**:
-- dataflows/cache/mongodb_cache_adapter.py
-- 缓存管理模块
-
-#### 6.2.4 统一数据接口
-
-**任务**:
-1. 实现统一数据接口
-2. 实现市场类型识别
-3. 实现技术指标计算
-4. 实现数据格式转换
+4. 实现港股数据源适配器（8小时）
+   - 实现AKShare港股数据获取
+   - 实现港股实时行情获取
+   - 实现港股历史数据获取
+   - 实现数据格式标准化
+   - 实现异常处理和重试机制
 
 **交付物**:
-- dataflows/interface.py
-- utils/indicators.py
-- utils/stock_utils.py
+- dataflows/providers/china/tushare_provider.py（Tushare适配器）
+- dataflows/providers/china/akshare_provider.py（AKShare适配器）
+- dataflows/providers/china/baostock_provider.py（BaoStock适配器）
+- dataflows/providers/hk/akshare_hk_provider.py（港股适配器）
+- tests/unit/test_providers.py（数据源单元测试）
+
+**验收标准**:
+- [ ] 所有数据源能正常连接
+- [ ] 数据获取功能正常
+- [ ] 数据格式符合统一规范
+- [ ] 异常处理机制完善
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 数据源API可能变更
+- 数据源可能限流或封禁
+- 数据格式可能不一致
+
+**依赖关系**:
+- 依赖6.1.2数据库设计完成
+- 依赖6.1.3配置管理完成
+
+#### 6.2.2 数据源管理器（4天）
+
+**任务清单**:
+1. 实现数据源管理器（8小时）
+   - 创建数据源管理器类（DataSourceManager）
+   - 实现数据源注册机制
+   - 实现数据源选择逻辑
+   - 实现数据源调用接口
+   - 实现数据源状态管理
+
+2. 实现数据源优先级配置（4小时）
+   - 实现优先级配置加载
+   - 实现动态优先级调整
+   - 实现优先级持久化
+
+3. 实现数据源降级机制（8小时）
+   - 实现主数据源失败检测
+   - 实现自动切换到备用数据源
+   - 实现降级通知
+   - 实现降级恢复机制
+
+4. 实现数据源健康检查（4小时）
+   - 实现健康检查接口
+   - 实现定时健康检查
+   - 实现健康状态记录
+   - 实现健康告警
+
+**交付物**:
+- dataflows/data_source_manager.py（数据源管理器）
+- config/data_source_config.py（数据源配置）
+- tests/unit/test_data_source_manager.py（单元测试）
+
+**验收标准**:
+- [ ] 数据源管理器能正常工作
+- [ ] 优先级配置生效
+- [ ] 降级机制正常
+- [ ] 健康检查功能正常
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 数据源切换可能导致数据不一致
+- 健康检查可能误判
+
+**依赖关系**:
+- 依赖6.2.1数据源适配器完成
+
+#### 6.2.3 缓存适配器（3天）
+
+**任务清单**:
+1. 实现MongoDB缓存适配器（8小时）
+   - 创建缓存适配器基类（CacheAdapter）
+   - 实现MongoDB缓存适配器（MongoDBCacheAdapter）
+   - 实现缓存读写接口
+   - 实现缓存删除接口
+   - 实现缓存批量操作
+
+2. 实现缓存过期机制（4小时）
+   - 实现TTL过期策略
+   - 实现LRU淘汰策略
+   - 实现过期数据清理
+
+3. 实现缓存预热（2小时）
+   - 实现热点数据识别
+   - 实现预热任务调度
+   - 实现预热数据加载
+
+4. 实现缓存统计（2小时）
+   - 实现缓存命中率统计
+   - 实现缓存容量统计
+   - 实现缓存性能监控
+
+**交付物**:
+- dataflows/cache/base_cache_adapter.py（缓存适配器基类）
+- dataflows/cache/mongodb_cache_adapter.py（MongoDB缓存适配器）
+- tests/unit/test_cache_adapter.py（单元测试）
+
+**验收标准**:
+- [ ] 缓存读写功能正常
+- [ ] 过期机制正常
+- [ ] 预热功能正常
+- [ ] 统计功能正常
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 缓存可能占用过多内存
+- 缓存失效可能导致性能下降
+
+**依赖关系**:
+- 依赖6.1.2数据库设计完成
+
+#### 6.2.4 统一数据接口（3天）
+
+**任务清单**:
+1. 实现统一数据接口（8小时）
+   - 创建数据接口基类（DataInterface）
+   - 实现市场数据获取接口
+   - 实现历史数据获取接口
+   - 实现财务数据获取接口
+   - 实现新闻数据获取接口
+
+2. 实现市场类型识别（2小时）
+   - 实现A股代码识别（utils/stock_utils.py）
+   - 实现港股代码识别
+   - 实现美股代码识别
+   - 实现市场类型枚举
+
+3. 实现技术指标计算（6小时）
+   - 实现移动平均线计算（MA5, MA10, MA20, MA60）
+   - 实现MACD计算
+   - 实现RSI计算（同花顺风格）
+   - 实现布林带计算
+   - 实现指标缓存
+
+4. 实现数据格式转换（2小时）
+   - 实现DataFrame转换
+   - 实现JSON转换
+   - 实现时间格式统一
+   - 实现数据验证
+
+**交付物**:
+- dataflows/interface.py（统一数据接口）
+- utils/stock_utils.py（股票工具类）
+- utils/indicators.py（技术指标计算）
+- tests/unit/test_interface.py（单元测试）
+
+**验收标准**:
+- [ ] 统一接口功能正常
+- [ ] 市场类型识别准确
+- [ ] 技术指标计算正确
+- [ ] 数据格式转换正常
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 技术指标计算可能有误差
+- 数据格式转换可能丢失精度
+
+**依赖关系**:
+- 依赖6.2.1数据源适配器完成
+- 依赖6.2.2数据源管理器完成
+- 依赖6.2.3缓存适配器完成
 
 ### 6.3 第三阶段：智能体开发（4周）
 
-#### 6.3.1 分析师开发
+#### 6.3.1 分析师开发（5天）
 
-**任务**:
-1. 实现市场分析师
-2. 实现基本面分析师
-3. 实现新闻分析师
-4. 实现情绪分析师
+**任务清单**:
+1. 实现市场分析师（12小时）
+   - 创建分析师基类（agents/analysts/base_analyst.py）
+   - 实现技术指标计算（MA、MACD、RSI、布林带）
+   - 实现价格趋势分析
+   - 实现支撑位和阻力位识别
+   - 实现技术面投资建议生成
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
 
-**交付物**:
-- agents/analysts/market_analyst.py
-- agents/analysts/fundamentals_analyst.py
-- agents/analysts/news_analyst.py
-- agents/analysts/sentiment_analyst.py
+2. 实现基本面分析师（12小时）
+   - 创建基本面分析师类（agents/analysts/fundamentals_analyst.py）
+   - 实现财务数据获取（PE、PB、ROE等）
+   - 实现估值指标分析
+   - 实现财务健康度评估
+   - 实现基本面投资建议生成
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
 
-#### 6.3.2 研究员开发
+3. 实现新闻分析师（10小时）
+   - 创建新闻分析师类（agents/analysts/news_analyst.py）
+   - 实现新闻数据获取（Google新闻、东方财富）
+   - 实现新闻事件分类
+   - 实现新闻情绪分析
+   - 实现新闻影响评估
+   - 实现新闻投资建议生成
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
 
-**任务**:
-1. 实现看涨研究员
-2. 实现看跌研究员
-3. 实现辩论机制
-4. 实现记忆学习
-
-**交付物**:
-- agents/researchers/bull_researcher.py
-- agents/researchers/bear_researcher.py
-- 辩论管理模块
-- 记忆学习模块
-
-#### 6.3.3 风险分析师开发
-
-**任务**:
-1. 实现激进风险分析师
-2. 实现中性风险分析师
-3. 实现保守风险分析师
-4. 实现风险讨论机制
-
-**交付物**:
-- agents/risk_mgmt/risky_debator.py
-- agents/risk_mgmt/neutral_debator.py
-- agents/risk_mgmt/safe_debator.py
-- 风险讨论模块
-
-#### 6.3.4 交易员开发
-
-**任务**:
-1. 实现交易员节点
-2. 实现决策逻辑
-3. 实现目标价格预测
-4. 实现止损价格计算
+4. 实现情绪分析师（10小时）
+   - 创建情绪分析师类（agents/analysts/sentiment_analyst.py）
+   - 实现社交媒体数据获取（雪球、东方财富股吧）
+   - 实现情绪指标计算
+   - 实现舆情监控
+   - 实现情绪投资建议生成
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
 
 **交付物**:
-- agents/trader/trader.py
-- 决策逻辑模块
+- agents/analysts/base_analyst.py（分析师基类）
+- agents/analysts/market_analyst.py（市场分析师）
+- agents/analysts/fundamentals_analyst.py（基本面分析师）
+- agents/analysts/news_analyst.py（新闻分析师）
+- agents/analysts/sentiment_analyst.py（情绪分析师）
+- tests/unit/test_analysts.py（分析师单元测试）
 
-#### 6.3.5 LLM适配器
+**验收标准**:
+- [ ] 所有分析师能正常工作
+- [ ] 技术指标计算正确
+- [ ] 基本面分析准确
+- [ ] 新闻分析合理
+- [ ] 情绪分析有效
+- [ ] 单元测试覆盖率>80%
 
-**任务**:
-1. 实现OpenAI兼容适配器基类
-2. 实现DeepSeek适配器
-3. 实现DashScope适配器
-4. 实现Qianfan适配器
-5. 实现Zhipu适配器
+**风险点**:
+- LLM输出可能不稳定
+- 数据源可能限流
+- 分析结果可能不准确
+
+**依赖关系**:
+- 依赖6.2.4统一数据接口完成
+- 依赖6.2.1数据源适配器完成
+
+#### 6.3.2 研究员开发（5天）
+
+**任务清单**:
+1. 实现看涨研究员（12小时）
+   - 创建看涨研究员类（agents/researchers/bull_researcher.py）
+   - 设计看涨研究员Prompt
+   - 实现看涨论点构建
+   - 实现积极因素识别
+   - 实现看跌观点反驳
+   - 实现历史记忆学习
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
+
+2. 实现看跌研究员（12小时）
+   - 创建看跌研究员类（agents/researchers/bear_researcher.py）
+   - 设计看跌研究员Prompt
+   - 实现看跌论点构建
+   - 实现负面因素识别
+   - 实现看涨观点反驳
+   - 实现历史记忆学习
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
+
+3. 实现辩论机制（8小时）
+   - 创建辩论管理器（agents/managers/research_manager.py）
+   - 实现辩论流程控制
+   - 实现辩论历史管理
+   - 实现辩论结果汇总
+   - 实现辩论终止条件
+   - 编写单元测试
+
+4. 实现记忆学习（4小时）
+   - 创建记忆存储模块（agents/memory/agent_memory.py）
+   - 实现ChromaDB集成
+   - 实现记忆检索
+   - 实现记忆更新
+   - 实现记忆清理
+   - 编写单元测试
 
 **交付物**:
-- llm_adapters/openai_compatible_base.py
-- DeepSeek适配器
-- DashScope适配器
-- Qianfan适配器
-- Zhipu适配器
+- agents/researchers/bull_researcher.py（看涨研究员）
+- agents/researchers/bear_researcher.py（看跌研究员）
+- agents/managers/research_manager.py（辩论管理器）
+- agents/memory/agent_memory.py（记忆存储模块）
+- tests/unit/test_researchers.py（研究员单元测试）
+
+**验收标准**:
+- [ ] 看涨研究员能正常工作
+- [ ] 看跌研究员能正常工作
+- [ ] 辩论机制运行正常
+- [ ] 记忆学习功能正常
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 辩论可能陷入死循环
+- 记忆可能占用过多存储
+- 学习效果可能不明显
+
+**依赖关系**:
+- 依赖6.3.1分析师开发完成
+- 依赖6.1.2ChromaDB设计完成
+
+#### 6.3.3 风险分析师开发（4天）
+
+**任务清单**:
+1. 实现激进风险分析师（8小时）
+   - 创建激进风险分析师类（agents/risk_mgmt/risky_debator.py）
+   - 设计激进风险分析师Prompt
+   - 实现高回报机会识别
+   - 实现风险收益比评估
+   - 实现保守观点挑战
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
+
+2. 实现中性风险分析师（8小时）
+   - 创建中性风险分析师类（agents/risk_mgmt/neutral_debator.py）
+   - 设计中性风险分析师Prompt
+   - 实现收益风险权衡
+   - 实现上行下行分析
+   - 实现极端观点挑战
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
+
+3. 实现保守风险分析师（8小时）
+   - 创建保守风险分析师类（agents/risk_mgmt/safe_debator.py）
+   - 设计保守风险分析师Prompt
+   - 实现资产保护策略
+   - 实现波动性最小化
+   - 实现风险缓解建议
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
+
+4. 实现风险讨论机制（8小时）
+   - 创建风险管理器（agents/managers/risk_manager.py）
+   - 实现风险讨论流程控制
+   - 实现风险讨论历史管理
+   - 实现风险评估汇总
+   - 实现风险等级判定
+   - 编写单元测试
+
+**交付物**:
+- agents/risk_mgmt/risky_debator.py（激进风险分析师）
+- agents/risk_mgmt/neutral_debator.py（中性风险分析师）
+- agents/risk_mgmt/safe_debator.py（保守风险分析师）
+- agents/managers/risk_manager.py（风险管理器）
+- tests/unit/test_risk_mgmt.py（风险管理单元测试）
+
+**验收标准**:
+- [ ] 所有风险分析师能正常工作
+- [ ] 风险讨论机制运行正常
+- [ ] 风险评估准确
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 风险评估可能过于保守或激进
+- 风险讨论可能无法达成一致
+- 风险等级判定可能不准确
+
+**依赖关系**:
+- 依赖6.3.2研究员开发完成
+
+#### 6.3.4 交易员开发（3天）
+
+**任务清单**:
+1. 实现交易员节点（12小时）
+   - 创建交易员类（agents/trader/trader.py）
+   - 设计交易员Prompt
+   - 实现多维度信息综合
+   - 实现投资决策生成
+   - 实现目标价格预测
+   - 实现止损价格计算
+   - 实现工具调用接口
+   - 实现异常处理
+   - 编写单元测试
+
+2. 实现决策逻辑（6小时）
+   - 创建决策模块（agents/trader/decision_logic.py）
+   - 实现决策权重分配
+   - 实现决策冲突解决
+   - 实现决策历史记录
+   - 实现决策优化
+   - 编写单元测试
+
+3. 实现价格预测（3小时）
+   - 创建价格预测模块（agents/trader/price_prediction.py）
+   - 实现技术面价格预测
+   - 实现基本面价格预测
+   - 实现综合价格预测
+   - 实现价格置信度计算
+   - 编写单元测试
+
+4. 实现止损计算（3小时）
+   - 创建止损计算模块（agents/trader/stop_loss.py）
+   - 实现ATR止损
+   - 实现百分比止损
+   - 实现波动率止损
+   - 实现动态止损调整
+   - 编写单元测试
+
+**交付物**:
+- agents/trader/trader.py（交易员）
+- agents/trader/decision_logic.py（决策逻辑模块）
+- agents/trader/price_prediction.py（价格预测模块）
+- agents/trader/stop_loss.py（止损计算模块）
+- tests/unit/test_trader.py（交易员单元测试）
+
+**验收标准**:
+- [ ] 交易员能正常工作
+- [ ] 决策逻辑合理
+- [ ] 价格预测准确
+- [ ] 止损计算合理
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 决策可能过于依赖某个分析师
+- 价格预测可能不准确
+- 止损可能过于严格或宽松
+
+**依赖关系**:
+- 依赖6.3.3风险分析师开发完成
+
+#### 6.3.5 LLM适配器（3天）
+
+**任务清单**:
+1. 实现OpenAI兼容适配器基类（6小时）
+   - 创建适配器基类（llm_adapters/openai_compatible_base.py）
+   - 实现LLM接口定义
+   - 实现消息格式化
+   - 实现响应解析
+   - 实现错误处理
+   - 实现重试机制
+   - 实现Token统计
+   - 编写单元测试
+
+2. 实现DeepSeek适配器（4小时）
+   - 创建DeepSeek适配器（llm_adapters/deepseek_adapter.py）
+   - 实现API调用
+   - 实现流式响应
+   - 实现参数配置
+   - 实现异常处理
+   - 编写单元测试
+
+3. 实现DashScope适配器（4小时）
+   - 创建DashScope适配器（llm_adapters/dashscope_adapter.py）
+   - 实现API调用
+   - 实现流式响应
+   - 实现参数配置
+   - 实现异常处理
+   - 编写单元测试
+
+4. 实现Qianfan适配器（4小时）
+   - 创建Qianfan适配器（llm_adapters/qianfan_adapter.py）
+   - 实现API调用
+   - 实现流式响应
+   - 实现参数配置
+   - 实现异常处理
+   - 编写单元测试
+
+5. 实现Zhipu适配器（4小时）
+   - 创建Zhipu适配器（llm_adapters/zhipu_adapter.py）
+   - 实现API调用
+   - 实现流式响应
+   - 实现参数配置
+   - 实现异常处理
+   - 编写单元测试
+
+**交付物**:
+- llm_adapters/openai_compatible_base.py（适配器基类）
+- llm_adapters/deepseek_adapter.py（DeepSeek适配器）
+- llm_adapters/dashscope_adapter.py（DashScope适配器）
+- llm_adapters/qianfan_adapter.py（Qianfan适配器）
+- llm_adapters/zhipu_adapter.py（Zhipu适配器）
+- tests/unit/test_llm_adapters.py（LLM适配器单元测试）
+
+**验收标准**:
+- [ ] 所有适配器能正常工作
+- [ ] API调用成功
+- [ ] 流式响应正常
+- [ ] 错误处理完善
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- LLM API可能变更
+- API调用可能失败
+- Token统计可能不准确
+
+**依赖关系**:
+- 依赖6.1.3配置管理完成
 
 ### 6.4 第四阶段：工作流编排（2周）
 
-#### 6.4.1 LangGraph集成
+#### 6.4.1 LangGraph集成（5天）
 
-**任务**:
-1. 实现工作流图设置
-2. 实现条件路由
-3. 实现状态管理
-4. 实现工具节点
+**任务清单**:
+1. 实现工作流图设置（12小时）
+   - 创建图配置（graph/setup.py）
+   - 定义StateGraph状态结构
+   - 创建节点定义
+   - 创建边定义
+   - 实现图编译
+   - 实现图执行
+   - 实现图调试
+   - 编写单元测试
+
+2. 实现条件路由（8小时）
+   - 创建路由条件函数
+   - 实现分析师路由
+   - 实现研究员路由
+   - 实现风险分析师路由
+   - 实现交易员路由
+   - 实现错误处理路由
+   - 编写单元测试
+
+3. 实现状态管理（8小时）
+   - 创建状态管理模块
+   - 实现状态初始化
+   - 实现状态更新
+   - 实现状态持久化
+   - 实现状态查询
+   - 实现状态清理
+   - 编写单元测试
+
+4. 实现工具节点（8小时）
+   - 创建工具节点基类
+   - 实现工具调用
+   - 实现工具结果处理
+   - 实现工具错误处理
+   - 实现工具超时处理
+   - 编写单元测试
 
 **交付物**:
-- graph/trading_graph.py
-- graph/setup.py
-- 工具节点模块
+- graph/trading_graph.py（交易工作流图）
+- graph/setup.py（图配置）
+- graph/state.py（状态管理）
+- graph/routing.py（路由条件）
+- graph/nodes.py（节点定义）
+- tests/unit/test_graph.py（工作流图单元测试）
 
-#### 6.4.2 工具开发
+**验收标准**:
+- [ ] 工作流图能正常执行
+- [ ] 条件路由准确
+- [ ] 状态管理正常
+- [ ] 工具调用正常
+- [ ] 单元测试覆盖率>80%
 
-**任务**:
-1. 实现市场数据工具
-2. 实现基本面数据工具
-3. 实现新闻数据工具
-4. 实现情绪数据工具
+**风险点**:
+- 工作流可能陷入死循环
+- 状态管理可能复杂
+- 工具调用可能超时
+
+**依赖关系**:
+- 依赖6.3智能体开发完成
+
+#### 6.4.2 工具开发（5天）
+
+**任务清单**:
+1. 实现市场数据工具（8小时）
+   - 创建市场数据工具（tools/market_data_tool.py）
+   - 实现实时行情获取
+   - 实现历史数据获取
+   - 实现技术指标计算
+   - 实现数据格式化
+   - 实现异常处理
+   - 编写单元测试
+
+2. 实现基本面数据工具（8小时）
+   - 创建基本面数据工具（tools/fundamentals_tool.py）
+   - 实现财务数据获取
+   - 实现估值指标计算
+   - 实现财务健康度评估
+   - 实现数据格式化
+   - 实现异常处理
+   - 编写单元测试
+
+3. 实现新闻数据工具（8小时）
+   - 创建新闻数据工具（tools/news_tool.py）
+   - 实现新闻获取
+   - 实现新闻分类
+   - 实现新闻情绪分析
+   - 实现数据格式化
+   - 实现异常处理
+   - 编写单元测试
+
+4. 实现情绪数据工具（8小时）
+   - 创建情绪数据工具（tools/sentiment_tool.py）
+   - 实现社交媒体数据获取
+   - 实现情绪指标计算
+   - 实现舆情分析
+   - 实现数据格式化
+   - 实现异常处理
+   - 编写单元测试
 
 **交付物**:
-- tools/market_data_tool.py
-- tools/fundamentals_tool.py
-- tools/news_tool.py
-- tools/sentiment_tool.py
+- tools/market_data_tool.py（市场数据工具）
+- tools/fundamentals_tool.py（基本面数据工具）
+- tools/news_tool.py（新闻数据工具）
+- tools/sentiment_tool.py（情绪数据工具）
+- tools/base_tool.py（工具基类）
+- tests/unit/test_tools.py（工具单元测试）
+
+**验收标准**:
+- [ ] 所有工具能正常工作
+- [ ] 数据获取准确
+- [ ] 异常处理完善
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 数据源可能限流
+- 数据可能不准确
+- 工具调用可能失败
+
+**依赖关系**:
+- 依赖6.2.4统一数据接口完成
+- 依赖6.4.1 LangGraph集成完成
 
 ### 6.5 第五阶段：策略引擎开发（3周）
 
-#### 6.5.1 基础策略
+#### 6.5.1 基础策略（4天）
 
-**任务**:
-1. 实现基础策略类
-2. 实现策略接口
-3. 实现策略验证
-4. 实现策略参数管理
+**任务清单**:
+1. 实现基础策略类（8小时）
+   - 创建策略基类（strategies/base_strategy.py）
+   - 定义策略接口
+   - 实现策略基类方法
+   - 实现策略参数管理
+   - 实现策略状态管理
+   - 编写单元测试
+
+2. 实现策略接口（4小时）
+   - 定义信号生成接口
+   - 定义仓位计算接口
+   - 定义风险控制接口
+   - 定义策略验证接口
+   - 编写接口文档
+
+3. 实现策略验证（4小时）
+   - 创建策略验证模块
+   - 实现参数验证
+   - 实现数据验证
+   - 实现逻辑验证
+   - 实现性能验证
+   - 编写单元测试
+
+4. 实现策略参数管理（4小时）
+   - 创建参数管理模块
+   - 实现参数加载
+   - 实现参数保存
+   - 实现参数验证
+   - 实现参数优化
+   - 编写单元测试
 
 **交付物**:
-- strategies/base_strategy.py
-- 策略接口定义
-- 策略验证模块
+- strategies/base_strategy.py（策略基类）
+- strategies/strategy_interface.py（策略接口）
+- strategies/strategy_validator.py（策略验证）
+- strategies/param_manager.py（参数管理）
+- tests/unit/test_base_strategy.py（基础策略单元测试）
 
-#### 6.5.2 技术指标策略
+**验收标准**:
+- [ ] 策略基类功能完整
+- [ ] 接口定义清晰
+- [ ] 验证功能正常
+- [ ] 参数管理正常
+- [ ] 单元测试覆盖率>80%
 
-**任务**:
-1. 实现MACD策略
-2. 实现RSI策略
-3. 实现布林带策略
-4. 实现多指标组合策略
+**风险点**:
+- 接口设计可能不够灵活
+- 验证可能过于严格
+- 参数管理可能复杂
+
+**依赖关系**:
+- 依赖6.4工作流编排完成
+
+#### 6.5.2 技术指标策略（5天）
+
+**任务清单**:
+1. 实现MACD策略（8小时）
+   - 创建MACD策略类（strategies/macd_strategy.py）
+   - 实现MACD计算
+   - 实现金叉死叉识别
+   - 实现信号生成
+   - 实现仓位计算
+   - 实现风险控制
+   - 编写单元测试
+
+2. 实现RSI策略（8小时）
+   - 创建RSI策略类（strategies/rsi_strategy.py）
+   - 实现RSI计算（同花顺风格）
+   - 实现超买超卖识别
+   - 实现信号生成
+   - 实现仓位计算
+   - 实现风险控制
+   - 编写单元测试
+
+3. 实现布林带策略（8小时）
+   - 创建布林带策略类（strategies/boll_strategy.py）
+   - 实现布林带计算
+   - 实现突破识别
+   - 实现信号生成
+   - 实现仓位计算
+   - 实现风险控制
+   - 编写单元测试
+
+4. 实现多指标组合策略（8小时）
+   - 创建组合策略类（strategies/combo_strategy.py）
+   - 实现多指标综合
+   - 实现信号融合
+   - 实现权重分配
+   - 实现仓位计算
+   - 实现风险控制
+   - 编写单元测试
 
 **交付物**:
-- strategies/macd_strategy.py
-- strategies/rsi_strategy.py
-- strategies/boll_strategy.py
-- 组合策略模块
+- strategies/macd_strategy.py（MACD策略）
+- strategies/rsi_strategy.py（RSI策略）
+- strategies/boll_strategy.py（布林带策略）
+- strategies/combo_strategy.py（组合策略）
+- tests/unit/test_indicator_strategies.py（技术指标策略单元测试）
 
-#### 6.5.3 AI策略
+**验收标准**:
+- [ ] 所有策略能正常工作
+- [ ] 信号生成准确
+- [ ] 仓位计算合理
+- [ ] 风险控制有效
+- [ ] 单元测试覆盖率>80%
 
-**任务**:
-1. 实现AI策略
-2. 集成智能体分析
-3. 实现信号生成
-4. 实现仓位管理
+**风险点**:
+- 策略可能过拟合
+- 信号可能滞后
+- 仓位可能过大
+
+**依赖关系**:
+- 依赖6.5.1基础策略完成
+- 依赖6.2.4统一数据接口完成
+
+#### 6.5.3 AI策略（6天）
+
+**任务清单**:
+1. 实现AI策略（12小时）
+   - 创建AI策略类（strategies/ai_strategy.py）
+   - 实现智能体调用
+   - 实现信号解析
+   - 实现信号验证
+   - 实现仓位计算
+   - 实现风险控制
+   - 编写单元测试
+
+2. 集成智能体分析（8小时）
+   - 创建智能体集成模块（strategies/agent_integration.py）
+   - 实现工作流图调用
+   - 实现结果解析
+   - 实现错误处理
+   - 实现重试机制
+   - 编写单元测试
+
+3. 实现信号生成（8小时）
+   - 创建信号生成模块（strategies/signal_generator.py）
+   - 实现买入信号生成
+   - 实现卖出信号生成
+   - 实现持有信号生成
+   - 实现信号过滤
+   - 实现信号优先级
+   - 编写单元测试
+
+4. 实现仓位管理（8小时）
+   - 创建仓位管理模块（strategies/position_manager.py）
+   - 实现固定仓位
+   - 实现动态仓位
+   - 实现凯利公式仓位
+   - 实现风险平价仓位
+   - 实现仓位限制
+   - 编写单元测试
 
 **交付物**:
-- strategies/ai_strategy.py
-- 智能体集成模块
+- strategies/ai_strategy.py（AI策略）
+- strategies/agent_integration.py（智能体集成）
+- strategies/signal_generator.py（信号生成）
+- strategies/position_manager.py（仓位管理）
+- tests/unit/test_ai_strategy.py（AI策略单元测试）
+
+**验收标准**:
+- [ ] AI策略能正常工作
+- [ ] 智能体调用成功
+- [ ] 信号生成合理
+- [ ] 仓位管理有效
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 智能体可能不稳定
+- 信号可能不一致
+- 仓位可能过大
+
+**依赖关系**:
+- 依赖6.4工作流编排完成
+- 依赖6.5.1基础策略完成
 
 ### 6.6 第六阶段：交易执行（2周）
 
-#### 6.6.1 订单管理
+#### 6.6.1 订单管理（4天）
 
-**任务**:
-1. 实现订单类
-2. 实现订单验证
-3. 实现订单状态管理
-4. 实现订单历史
+**任务清单**:
+1. 实现订单类（8小时）
+   - 创建订单模型（app/models/order.py）
+   - 定义订单类型枚举
+   - 定义订单方向枚举
+   - 定义订单状态枚举
+   - 实现订单初始化
+   - 实现订单验证
+   - 实现订单序列化
+   - 编写单元测试
+
+2. 实现订单验证（4小时）
+   - 创建订单验证模块
+   - 实现参数验证
+   - 实现资金验证
+   - 实现持仓验证
+   - 实现风险验证
+   - 编写单元测试
+
+3. 实现订单状态管理（4小时）
+   - 创建状态管理模块
+   - 实现状态转换
+   - 实现状态持久化
+   - 实现状态查询
+   - 实现状态历史
+   - 编写单元测试
+
+4. 实现订单历史（4小时）
+   - 创建历史管理模块
+   - 实现历史记录
+   - 实现历史查询
+   - 实现历史统计
+   - 实现历史导出
+   - 编写单元测试
 
 **交付物**:
-- app/models/order.py
-- 订单管理模块
+- app/models/order.py（订单模型）
+- app/services/order_validator.py（订单验证）
+- app/services/order_state.py（订单状态管理）
+- app/services/order_history.py（订单历史）
+- tests/unit/test_order.py（订单单元测试）
 
-#### 6.6.2 持仓管理
+**验收标准**:
+- [ ] 订单模型完整
+- [ ] 验证功能正常
+- [ ] 状态管理正常
+- [ ] 历史记录正常
+- [ ] 单元测试覆盖率>80%
 
-**任务**:
-1. 实现持仓类
-2. 实现持仓计算
-3. 实现持仓更新
-4. 实现持仓历史
+**风险点**:
+- 订单验证可能过于严格
+- 状态转换可能出错
+- 历史记录可能过多
+
+**依赖关系**:
+- 依赖6.5策略引擎完成
+- 依赖6.1.2数据库设计完成
+
+#### 6.6.2 持仓管理（3天）
+
+**任务清单**:
+1. 实现持仓类（8小时）
+   - 创建持仓模型（app/models/position.py）
+   - 定义持仓类型枚举
+   - 定义持仓状态枚举
+   - 实现持仓初始化
+   - 实现持仓验证
+   - 实现持仓序列化
+   - 编写单元测试
+
+2. 实现持仓计算（4小时）
+   - 创建计算模块
+   - 实现成本计算
+   - 实现收益计算
+   - 实现盈亏计算
+   - 实现市值计算
+   - 编写单元测试
+
+3. 实现持仓更新（4小时）
+   - 创建更新模块
+   - 实现持仓增加
+   - 实现持仓减少
+   - 实现持仓调整
+   - 实现持仓平仓
+   - 编写单元测试
+
+4. 实现持仓历史（4小时）
+   - 创建历史模块
+   - 实现历史记录
+   - 实现历史查询
+   - 实现历史统计
+   - 实现历史导出
+   - 编写单元测试
 
 **交付物**:
-- app/models/position.py
-- 持仓管理模块
+- app/models/position.py（持仓模型）
+- app/services/position_calc.py（持仓计算）
+- app/services/position_update.py（持仓更新）
+- app/services/position_history.py（持仓历史）
+- tests/unit/test_position.py（持仓单元测试）
 
-#### 6.6.3 交易引擎
+**验收标准**:
+- [ ] 持仓模型完整
+- [ ] 计算准确
+- [ ] 更新正常
+- [ ] 历史记录正常
+- [ ] 单元测试覆盖率>80%
 
-**任务**:
-1. 实现交易引擎
-2. 实现订单执行
-3. 实现滑点模拟
-4. 实现交易成本计算
+**风险点**:
+- 计算可能有误差
+- 更新可能失败
+- 历史记录可能过多
+
+**依赖关系**:
+- 依赖6.6.1订单管理完成
+- 依赖6.1.2数据库设计完成
+
+#### 6.6.3 交易引擎（7天）
+
+**任务清单**:
+1. 实现交易引擎（16小时）
+   - 创建交易引擎类（app/services/trading_engine.py）
+   - 实现订单接收
+   - 实现订单验证
+   - 实现订单执行
+   - 实现订单取消
+   - 实现订单查询
+   - 实现异常处理
+   - 编写单元测试
+
+2. 实现订单执行（12小时）
+   - 创建执行模块
+   - 实现市价单执行
+   - 实现限价单执行
+   - 实现止损单执行
+   - 实现部分成交处理
+   - 实现成交确认
+   - 编写单元测试
+
+3. 实现滑点模拟（4小时）
+   - 创建滑点模块
+   - 实现固定滑点
+   - 实现随机滑点
+   - 实现动态滑点
+   - 实现滑点统计
+   - 编写单元测试
+
+4. 实现交易成本计算（4小时）
+   - 创建成本模块
+   - 实现手续费计算
+   - 实现印花税计算
+   - 实现过户费计算
+   - 实现总成本计算
+   - 编写单元测试
 
 **交付物**:
-- app/services/trading_service.py
-- 交易引擎模块
+- app/services/trading_engine.py（交易引擎）
+- app/services/order_execution.py（订单执行）
+- app/services/slippage.py（滑点模拟）
+- app/services/trading_cost.py（交易成本）
+- tests/unit/test_trading_engine.py（交易引擎单元测试）
+
+**验收标准**:
+- [ ] 交易引擎功能完整
+- [ ] 订单执行准确
+- [ ] 滑点模拟合理
+- [ ] 成本计算准确
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 订单执行可能失败
+- 滑点可能过大
+- 成本计算可能有误
+
+**依赖关系**:
+- 依赖6.6.1订单管理完成
+- 依赖6.6.2持仓管理完成
 
 ### 6.7 第七阶段：回测系统（2周）
 
-#### 6.7.1 回测引擎
+#### 6.7.1 回测引擎（5天）
 
-**任务**:
-1. 实现回测引擎
-2. 实现信号回放
-3. 实现交易模拟
-4. 实现滑点和手续费
+**任务清单**:
+1. 实现回测引擎（16小时）
+   - 创建回测引擎类（backtest/engine.py）
+   - 实现数据加载
+   - 实现信号回放
+   - 实现交易模拟
+   - 实现状态管理
+   - 实现进度跟踪
+   - 实现异常处理
+   - 编写单元测试
+
+2. 实现信号回放（8小时）
+   - 创建回放模块
+   - 实现信号解析
+   - 实现信号执行
+   - 实现信号验证
+   - 实现信号统计
+   - 编写单元测试
+
+3. 实现交易模拟（8小时）
+   - 创建模拟模块
+   - 实现订单模拟
+   - 实现成交模拟
+   - 实现滑点模拟
+   - 实现成本模拟
+   - 编写单元测试
+
+4. 实现滑点和手续费（4小时）
+   - 创建成本模块
+   - 实现滑点配置
+   - 实现手续费配置
+   - 实现成本计算
+   - 实现成本统计
+   - 编写单元测试
 
 **交付物**:
-- backtest/engine.py
-- 回测引擎模块
+- backtest/engine.py（回测引擎）
+- backtest/signal_replay.py（信号回放）
+- backtest/trading_simulation.py（交易模拟）
+- backtest/cost_model.py（成本模型）
+- tests/unit/test_backtest_engine.py（回测引擎单元测试）
 
-#### 6.7.2 回测指标
+**验收标准**:
+- [ ] 回测引擎功能完整
+- [ ] 信号回放准确
+- [ ] 交易模拟合理
+- [ ] 成本计算准确
+- [ ] 单元测试覆盖率>80%
 
-**任务**:
-1. 实现回测指标计算
-2. 实现权益曲线
-3. 实现回撤分析
-4. 实现绩效报告
+**风险点**:
+- 回测可能不准确
+- 信号可能丢失
+- 模拟可能过于简化
+
+**依赖关系**:
+- 依赖6.6交易执行完成
+- 依赖6.5策略引擎完成
+
+#### 6.7.2 回测指标（5天）
+
+**任务清单**:
+1. 实现回测指标计算（12小时）
+   - 创建指标模块（backtest/metrics.py）
+   - 实现收益率计算
+   - 实现年化收益率计算
+   - 实现最大回撤计算
+   - 实现夏普比率计算
+   - 实现胜率计算
+   - 实现盈亏比计算
+   - 编写单元测试
+
+2. 实现权益曲线（4小时）
+   - 创建曲线模块
+   - 实现权益记录
+   - 实现曲线绘制
+   - 实现曲线导出
+   - 实现曲线对比
+   - 编写单元测试
+
+3. 实现回撤分析（4小时）
+   - 创建回撤模块
+   - 实现回撤计算
+   - 实现回撤统计
+   - 实现回撤分布
+   - 实现回撤预警
+   - 编写单元测试
+
+4. 实现绩效报告（8小时）
+   - 创建报告模块（backtest/report.py）
+   - 实现报告生成
+   - 实现图表生成
+   - 实现报告导出
+   - 实现报告对比
+   - 编写单元测试
 
 **交付物**:
-- backtest/metrics.py
-- backtest/report.py
+- backtest/metrics.py（回测指标）
+- backtest/equity_curve.py（权益曲线）
+- backtest/drawdown_analysis.py（回撤分析）
+- backtest/report.py（绩效报告）
+- tests/unit/test_metrics.py（回测指标单元测试）
+
+**验收标准**:
+- [ ] 指标计算准确
+- [ ] 权益曲线正确
+- [ ] 回撤分析合理
+- [ ] 报告生成正常
+- [ ] 单元测试覆盖率>80%
+
+**风险点**:
+- 指标计算可能有误
+- 曲线可能不准确
+- 报告可能不完整
+
+**依赖关系**:
+- 依赖6.7.1回测引擎完成
 
 ### 6.8 第八阶段：Web API开发（3周）
 
-#### 6.8.1 FastAPI后端
+#### 6.8.1 FastAPI后端（5天）
 
-**任务**:
-1. 实现FastAPI应用
-2. 实现认证接口
-3. 实现分析接口
-4. 实现交易接口
-5. 实现回测接口
-6. 实现WebSocket实时推送
+**任务清单**:
+1. 实现FastAPI应用（8小时）
+   - 创建应用入口（app/main.py）
+   - 配置CORS中间件
+   - 配置日志中间件
+   - 配置请求ID中间件
+   - 配置异常处理
+   - 配置路由注册
+   - 编写单元测试
+
+2. 实现认证接口（8小时）
+   - 创建认证路由（app/api/auth.py）
+   - 实现用户注册
+   - 实现用户登录
+   - 实现Token刷新
+   - 实现密码重置
+   - 实现JWT验证
+   - 编写单元测试
+
+3. 实现分析接口（8小时）
+   - 创建分析路由（app/api/analysis.py）
+   - 实现股票分析接口
+   - 实现分析历史查询
+   - 实现分析结果导出
+   - 实现批量分析接口
+   - 编写单元测试
+
+4. 实现交易接口（8小时）
+   - 创建交易路由（app/api/trading.py）
+   - 实现下单接口
+   - 实现撤单接口
+   - 实现持仓查询
+   - 实现交易历史查询
+   - 实现账户信息查询
+   - 编写单元测试
+
+5. 实现回测接口（8小时）
+   - 创建回测路由（app/api/backtest.py）
+   - 实现回测启动接口
+   - 实现回测查询接口
+   - 实现回测结果导出
+   - 实现回测对比接口
+   - 编写单元测试
+
+6. 实现WebSocket实时推送（8小时）
+   - 创建WebSocket管理器
+   - 实现行情推送
+   - 实现交易推送
+   - 实现通知推送
+   - 实现连接管理
+   - 编写单元测试
 
 **交付物**:
-- app/main.py
-- app/api/auth.py
-- app/api/analysis.py
-- app/api/trading.py
-- app/api/backtest.py
-- WebSocket实时推送模块
+- app/main.py（应用入口）
+- app/api/auth.py（认证接口）
+- app/api/analysis.py（分析接口）
+- app/api/trading.py（交易接口）
+- app/api/backtest.py（回测接口）
+- app/websocket/manager.py（WebSocket管理器）
+- tests/unit/test_api.py（API单元测试）
 
-#### 6.8.2 React前端开发（参考NOFX前端实现）
+**验收标准**:
+- [ ] FastAPI应用能正常启动
+- [ ] 所有接口功能正常
+- [ ] WebSocket推送正常
+- [ ] 异常处理完善
+- [ ] 单元测试覆盖率>80%
 
-**任务**:
-1. 前端项目初始化和配置
-2. 实现UI组件库（基于Radix UI）
-3. 实现图表组件（Recharts + Lightweight Charts）
-4. 实现状态管理（Zustand）
-5. 实现自定义Hooks
-6. 实现API服务层
-7. 实现页面组件
+**风险点**:
+- 接口可能存在安全漏洞
+- WebSocket连接可能不稳定
+- 异常处理可能不完善
+
+**依赖关系**:
+- 依赖6.7回测系统完成
+- 依赖6.6交易执行完成
+
+#### 6.8.2 React前端开发（参考NOFX前端实现）（10天）
+
+**任务清单**:
+1. 前端项目初始化和配置（8小时）
+   - 创建Vite + React + TypeScript项目
+   - 配置TailwindCSS
+   - 配置ESLint和Prettier
+   - 配置路径别名
+   - 配置开发服务器代理
+   - 编写package.json
+   - 编写vite.config.ts
+   - 编写tailwind.config.js
+
+2. 实现UI组件库（16小时）
+   - 实现Button组件（基于Radix UI）
+   - 实现Card组件
+   - 实现Dialog组件
+   - 实现Input组件
+   - 实现Select组件
+   - 实现Table组件
+   - 实现Tabs组件
+   - 实现Toast组件
+   - 实现Loading组件
+   - 编写组件测试
+
+3. 实现图表组件（16小时）
+   - 实现K线图组件（Lightweight Charts）
+   - 实现折线图组件（Recharts）
+   - 实现柱状图组件（Recharts）
+   - 实现饼图组件（Recharts）
+   - 实现权益曲线组件
+   - 实现回撤图组件
+   - 实现性能对比图表（ComparisonChart）
+   - 编写组件测试
+
+4. 实现状态管理（12小时）
+   - 实现认证状态管理（authStore）
+   - 实现市场数据状态管理（marketStore）
+   - 实现交易状态管理（tradingStore）
+   - 实现分析状态管理（analysisStore）
+   - 实现回测状态管理（backtestStore）
+   - 实现投资组合状态管理（portfolioStore）
+   - 实现设置状态管理（settingsStore）
+   - 编写状态管理测试
+
+5. 实现自定义Hooks（12小时）
+   - 实现认证Hook（useAuth）
+   - 实现主题Hook（useTheme）
+   - 实现WebSocket Hook（useWebSocket）
+   - 实现市场数据Hook（useMarketData）
+   - 实现分析Hook（useAnalysis）
+   - 实现交易Hook（useTrading）
+   - 实现回测Hook（useBacktest）
+   - 实现防抖Hook（useDebounce）
+   - 编写Hook测试
+
+6. 实现API服务层（8小时）
+   - 实现API基础配置（axios + 拦截器）
+   - 实现认证API（authApi）
+   - 实现市场数据API（marketApi）
+   - 实现交易API（tradingApi）
+   - 实现分析API（analysisApi）
+   - 实现回测API（backtestApi）
+   - 实现投资组合API（portfolioApi）
+   - 实现竞争模式API（competitionApi）
+   - 编写API测试
+
+7. 实现页面组件（24小时）
+   - 实现仪表板页面（Dashboard）
+   - 实现分析页面（Analysis）
+   - 实现交易页面（Trading）
+   - 实现回测页面（Backtest）
+   - 实现投资组合页面（Portfolio）
+   - 实现设置页面（Settings）
+   - 实现Landing页面
+   - 实现竞争模式页面（Competition）
+   - 编写页面测试
+
+8. 实现竞争模式组件（8小时）
+   - 实现CompetitionPage组件
+   - 实现ComparisonChart组件
+   - 实现Leaderboard组件
+   - 实现HeadToHeadStats组件
+   - 实现PunkAvatar组件
+   - 实现TraderConfigViewModal组件
+   - 编写组件测试
 
 **交付物**:
 - 前端项目结构和配置文件
-- UI组件库（Button、Card、Dialog、Input、Select、Table、Tabs、Toast等）
-- 图表组件（CandlestickChart、LineChart、BarChart、PieChart、EquityCurve等）
+- UI组件库（Button、Card、Dialog、Input、Select、Table、Tabs、Toast、Loading等）
+- 图表组件（CandlestickChart、LineChart、BarChart、PieChart、EquityCurve、DrawdownChart、ComparisonChart等）
 - Zustand状态管理（authStore、marketStore、tradingStore、analysisStore、backtestStore、portfolioStore、settingsStore）
-- 自定义Hooks（useAuth、useTheme、useWebSocket、useMarketData、useAnalysis、useTrading、useBacktest）
-- API服务层（api、authApi、marketApi、tradingApi、analysisApi、backtestApi、portfolioApi）
-- 页面组件（Dashboard、Analysis、Trading、Backtest、Portfolio、Settings、Landing）
+- 自定义Hooks（useAuth、useTheme、useWebSocket、useMarketData、useAnalysis、useTrading、useBacktest、useDebounce）
+- API服务层（api、authApi、marketApi、tradingApi、analysisApi、backtestApi、portfolioApi、competitionApi）
+- 页面组件（Dashboard、Analysis、Trading、Backtest、Portfolio、Settings、Landing、Competition）
+- 竞争模式组件（CompetitionPage、ComparisonChart、Leaderboard、HeadToHeadStats、PunkAvatar、TraderConfigViewModal）
 
-#### 6.8.2.1 前端项目初始化
+**验收标准**:
+- [ ] 前端项目能正常启动
+- [ ] 所有UI组件功能正常
+- [ ] 所有图表组件显示正常
+- [ ] 状态管理功能正常
+- [ ] 所有Hooks功能正常
+- [ ] API调用成功
+- [ ] 所有页面功能正常
+- [ ] 竞争模式功能正常
+- [ ] 单元测试覆盖率>80%
 
-**任务**:
-1. 创建Vite + React + TypeScript项目
-2. 配置TailwindCSS
-3. 配置ESLint和Prettier
-4. 配置路径别名
-5. 配置开发服务器代理
+**风险点**:
+- 组件可能存在性能问题
+- 图表可能渲染缓慢
+- 状态管理可能复杂
+- API调用可能失败
 
-**交付物**:
-- package.json
-- vite.config.ts
-- tailwind.config.js
-- tsconfig.json
-- .eslintrc.js
-- .prettierrc.json
-
-#### 6.8.2.2 UI组件库开发
-
-**任务**:
-1. 实现Button组件
-2. 实现Card组件
-3. 实现Dialog组件
-4. 实现Input组件
-5. 实现Select组件
-6. 实现Table组件
-7. 实现Tabs组件
-8. 实现Toast组件
-9. 实现Loading组件
-
-**交付物**:
-- frontend/components/ui/Button.tsx
-- frontend/components/ui/Card.tsx
-- frontend/components/ui/Dialog.tsx
-- frontend/components/ui/Input.tsx
-- frontend/components/ui/Select.tsx
-- frontend/components/ui/Table.tsx
-- frontend/components/ui/Tabs.tsx
-- frontend/components/ui/Toast.tsx
-- frontend/components/ui/Loading.tsx
-
-#### 6.8.2.3 图表组件开发
-
-**任务**:
-1. 实现K线图组件（Lightweight Charts）
-2. 实现折线图组件（Recharts）
-3. 实现柱状图组件（Recharts）
-4. 实现饼图组件（Recharts）
-5. 实现权益曲线组件
-6. 实现回撤图组件
-
-**交付物**:
-- frontend/components/charts/CandlestickChart.tsx
-- frontend/components/charts/LineChart.tsx
-- frontend/components/charts/BarChart.tsx
-- frontend/components/charts/PieChart.tsx
-- frontend/components/charts/EquityCurve.tsx
-- frontend/components/charts/DrawdownChart.tsx
-
-#### 6.8.2.4 状态管理开发
-
-**任务**:
-1. 实现认证状态管理
-2. 实现市场数据状态管理
-3. 实现交易状态管理
-4. 实现分析状态管理
-5. 实现回测状态管理
-6. 实现投资组合状态管理
-7. 实现设置状态管理
-
-**交付物**:
-- frontend/stores/authStore.ts
-- frontend/stores/marketStore.ts
-- frontend/stores/tradingStore.ts
-- frontend/stores/analysisStore.ts
-- frontend/stores/backtestStore.ts
-- frontend/stores/portfolioStore.ts
-- frontend/stores/settingsStore.ts
-
-#### 6.8.2.5 自定义Hooks开发
-
-**任务**:
-1. 实现认证Hook
-2. 实现主题Hook
-3. 实现WebSocket Hook
-4. 实现市场数据Hook
-5. 实现分析Hook
-6. 实现交易Hook
-7. 实现回测Hook
-8. 实现防抖Hook
-
-**交付物**:
-- frontend/hooks/useAuth.ts
-- frontend/hooks/useTheme.ts
-- frontend/hooks/useWebSocket.ts
-- frontend/hooks/useMarketData.ts
-- frontend/hooks/useAnalysis.ts
-- frontend/hooks/useTrading.ts
-- frontend/hooks/useBacktest.ts
-- frontend/hooks/useDebounce.ts
-
-#### 6.8.2.6 API服务层开发
-
-**任务**:
-1. 实现API基础配置（axios + 拦截器）
-2. 实现认证API
-3. 实现市场数据API
-4. 实现交易API
-5. 实现分析API
-6. 实现回测API
-7. 实现投资组合API
-
-**交付物**:
-- frontend/services/api.ts
-- frontend/services/authApi.ts
-- frontend/services/marketApi.ts
-- frontend/services/tradingApi.ts
-- frontend/services/analysisApi.ts
-- frontend/services/backtestApi.ts
-- frontend/services/portfolioApi.ts
-
-#### 6.8.2.7 页面组件开发
-
-**任务**:
-1. 实现仪表板页面
-2. 实现分析页面
-3. 实现交易页面
-4. 实现回测页面
-5. 实现投资组合页面
-6. 实现设置页面
-7. 实现Landing页面
-
-**交付物**:
-- frontend/pages/Dashboard.tsx
-- frontend/pages/Analysis.tsx
-- frontend/pages/Trading.tsx
-- frontend/pages/Backtest.tsx
-- frontend/pages/Portfolio.tsx
-- frontend/pages/Settings.tsx
-- frontend/pages/Landing.tsx
+**依赖关系**:
+- 依赖6.8.1 FastAPI后端完成
 
 ### 6.9 第九阶段：测试和优化（2周）
 
-#### 6.9.1 单元测试
+#### 6.9.1 单元测试（5天）
 
-**任务**:
-1. 编写数据层单元测试
-2. 编写智能体单元测试
-3. 编写策略单元测试
-4. 编写交易引擎单元测试
+**任务清单**:
+1. 编写数据层单元测试（8小时）
+   - 数据源适配器测试
+   - 数据源管理器测试
+   - 缓存适配器测试
+   - 统一数据接口测试
+   - 数据库操作测试
+   - 测试覆盖率>80%
+
+2. 编写智能体单元测试（12小时）
+   - 市场分析师测试
+   - 基本面分析师测试
+   - 新闻分析师测试
+   - 情绪分析师测试
+   - 看涨研究员测试
+   - 看跌研究员测试
+   - 激进风险分析师测试
+   - 中性风险分析师测试
+   - 保守风险分析师测试
+   - 交易员测试
+   - 测试覆盖率>80%
+
+3. 编写策略单元测试（8小时）
+   - 基础策略测试
+   - MACD策略测试
+   - RSI策略测试
+   - 布林带策略测试
+   - 组合策略测试
+   - AI策略测试
+   - 测试覆盖率>80%
+
+4. 编写交易引擎单元测试（8小时）
+   - 订单管理测试
+   - 持仓管理测试
+   - 交易引擎测试
+   - 订单执行测试
+   - 滑点模拟测试
+   - 交易成本测试
+   - 测试覆盖率>80%
+
+5. 编写回测引擎单元测试（8小时）
+   - 回测引擎测试
+   - 信号回放测试
+   - 交易模拟测试
+   - 成本模型测试
+   - 指标计算测试
+   - 权益曲线测试
+   - 回撤分析测试
+   - 绩效报告测试
+   - 测试覆盖率>80%
 
 **交付物**:
-- tests/unit/目录
-- 单元测试覆盖率>80%
+- tests/unit/test_providers.py（数据源测试）
+- tests/unit/test_data_source_manager.py（数据源管理器测试）
+- tests/unit/test_cache_adapter.py（缓存测试）
+- tests/unit/test_interface.py（数据接口测试）
+- tests/unit/test_analysts.py（分析师测试）
+- tests/unit/test_researchers.py（研究员测试）
+- tests/unit/test_risk_mgmt.py（风险管理测试）
+- tests/unit/test_trader.py（交易员测试）
+- tests/unit/test_strategies.py（策略测试）
+- tests/unit/test_trading_engine.py（交易引擎测试）
+- tests/unit/test_backtest_engine.py（回测引擎测试）
+- pytest.ini（pytest配置）
+- coverage.ini（覆盖率配置）
 
-#### 6.9.2 集成测试
+**验收标准**:
+- [ ] 所有单元测试通过
+- [ ] 测试覆盖率>80%
+- [ ] 测试用例完整
+- [ ] 测试文档完整
 
-**任务**:
-1. 编写API集成测试
-2. 编写工作流集成测试
-3. 编写回测集成测试
-4. 编写端到端测试
+**风险点**:
+- 测试用例可能不完整
+- Mock可能不准确
+- 测试可能不稳定
+
+**依赖关系**:
+- 依赖6.8 Web API开发完成
+
+#### 6.9.2 集成测试（3天）
+
+**任务清单**:
+1. 编写API集成测试（8小时）
+   - 认证API集成测试
+   - 分析API集成测试
+   - 交易API集成测试
+   - 回测API集成测试
+   - WebSocket集成测试
+   - 端到端测试
+
+2. 编写工作流集成测试（8小时）
+   - 智能体工作流集成测试
+   - 策略引擎集成测试
+   - 交易执行集成测试
+   - 回测流程集成测试
+
+3. 编写回测集成测试（4小时）
+   - 完整回测流程测试
+   - 多策略回测测试
+   - 回测结果验证测试
+
+4. 编写端到端测试（4小时）
+   - 用户注册登录流程
+   - 股票分析流程
+   - 交易执行流程
+   - 回测运行流程
 
 **交付物**:
-- tests/integration/目录
-- 集成测试用例
+- tests/integration/test_api_integration.py（API集成测试）
+- tests/integration/test_workflow_integration.py（工作流集成测试）
+- tests/integration/test_backtest_integration.py（回测集成测试）
+- tests/integration/test_e2e.py（端到端测试）
+- conftest.py（测试配置）
 
-#### 6.9.3 性能优化
+**验收标准**:
+- [ ] 所有集成测试通过
+- [ ] 端到端流程正常
+- [ ] 集成测试用例完整
 
-**任务**:
-1. 数据库查询优化
-2. 缓存优化
-3. 异步处理优化
-4. LLM调用优化
+**风险点**:
+- 集成测试可能不稳定
+- 端到端测试可能复杂
+- 测试环境可能不一致
+
+**依赖关系**:
+- 依赖6.9.1单元测试完成
+
+#### 6.9.3 性能优化（2天）
+
+**任务清单**:
+1. 数据库查询优化（4小时）
+   - 分析慢查询
+   - 优化索引
+   - 优化查询语句
+   - 实现查询缓存
+   - 实现分页查询
+
+2. 缓存优化（4小时）
+   - 优化缓存策略
+   - 实现缓存预热
+   - 实现缓存更新
+   - 监控缓存命中率
+
+3. 异步处理优化（4小时）
+   - 优化异步任务
+   - 实现任务队列
+   - 优化并发处理
+   - 实现任务优先级
+
+4. LLM调用优化（4小时）
+   - 实现请求批处理
+   - 实现响应缓存
+   - 优化Prompt长度
+   - 实现流式响应
+   - 监控调用成本
 
 **交付物**:
 - 性能优化报告
 - 优化后的代码
+- 性能监控配置
+
+**验收标准**:
+- [ ] API响应时间<500ms
+- [ ] 数据库查询时间<100ms
+- [ ] 缓存命中率>80%
+- [ ] LLM调用成本降低20%
+
+**风险点**:
+- 优化可能引入新问题
+- 性能提升可能不明显
+- 优化可能影响功能
+
+**依赖关系**:
+- 依赖6.9.2集成测试完成
 
 ### 6.10 第十阶段：部署和文档（1周）
 
-#### 6.10.1 部署准备
+#### 6.10.1 部署准备（3天）
 
-**任务**:
-1. 编写Dockerfile
-2. 编写docker-compose.yml
-3. 编写部署脚本
-4. 编写监控配置
+**任务清单**:
+1. 编写Dockerfile（4小时）
+   - 编写后端Dockerfile
+   - 编写前端Dockerfile
+   - 优化镜像大小
+   - 实现多阶段构建
+   - 编写.dockerignore
+
+2. 编写docker-compose.yml（4小时）
+   - 配置后端服务
+   - 配置前端服务
+   - 配置MongoDB
+   - 配置Redis
+   - 配置ChromaDB
+   - 配置网络和卷
+
+3. 编写部署脚本（4小时）
+   - 编写部署脚本（deploy.sh）
+   - 编写更新脚本（update.sh）
+   - 编写回滚脚本（rollback.sh）
+   - 编写健康检查脚本
+   - 编写备份脚本
+
+4. 编写监控配置（4小时）
+   - 配置Prometheus
+   - 配置Grafana
+   - 配置日志收集（ELK）
+   - 配置告警规则
+   - 编写监控文档
+
+5. 编写CI/CD配置（4小时）
+   - 配置GitHub Actions
+   - 配置自动测试
+   - 配置自动构建
+   - 配置自动部署
+   - 配置环境变量
 
 **交付物**:
-- Dockerfile
+- Dockerfile（后端）
+- Dockerfile.frontend（前端）
 - docker-compose.yml
-- 部署脚本
+- .dockerignore
+- scripts/deploy.sh（部署脚本）
+- scripts/update.sh（更新脚本）
+- scripts/rollback.sh（回滚脚本）
+- scripts/health_check.sh（健康检查）
+- scripts/backup.sh（备份脚本）
+- prometheus.yml（Prometheus配置）
+- grafana/dashboards/（Grafana仪表板）
+- .github/workflows/ci-cd.yml（CI/CD配置）
 
-#### 6.10.2 文档编写
+**验收标准**:
+- [ ] Docker镜像能正常构建
+- [ ] docker-compose能正常启动
+- [ ] 部署脚本功能正常
+- [ ] 监控能正常工作
+- [ ] CI/CD流程正常
 
-**任务**:
-1. 编写API文档
-2. 编写用户手册
-3. 编写开发者文档
-4. 编写部署文档
+**风险点**:
+- 部署可能失败
+- 监控可能不准确
+- CI/CD可能不稳定
+
+**依赖关系**:
+- 依赖6.9测试和优化完成
+
+#### 6.10.2 文档编写（2天）
+
+**任务清单**:
+1. 编写API文档（4小时）
+   - 编写API接口文档
+   - 编写请求示例
+   - 编写响应示例
+   - 编写错误码说明
+   - 使用Swagger/OpenAPI
+
+2. 编写用户手册（4小时）
+   - 编写快速开始指南
+   - 编写功能使用说明
+   - 编写常见问题解答
+   - 编写视频教程
+   - 编写最佳实践
+
+3. 编写开发者文档（4小时）
+   - 编写架构设计文档
+   - 编写开发指南
+   - 编写代码规范
+   - 编写贡献指南
+   - 编写调试指南
+
+4. 编写部署文档（4小时）
+   - 编写部署指南
+   - 编写配置说明
+   - 编写运维手册
+   - 编写故障排查指南
+   - 编写升级指南
 
 **交付物**:
-- API文档
-- 用户手册
-- 开发者文档
-- 部署文档
+- docs/api/（API文档）
+- docs/user/（用户手册）
+- docs/developer/（开发者文档）
+- docs/deployment/（部署文档）
+- README.md（项目说明）
+- CONTRIBUTING.md（贡献指南）
+- CHANGELOG.md（变更日志）
+- docs/FAQ.md（常见问题）
+
+**验收标准**:
+- [ ] API文档完整准确
+- [ ] 用户手册清晰易懂
+- [ ] 开发者文档详细
+- [ ] 部署文档可操作
+
+**风险点**:
+- 文档可能不完整
+- 文档可能过时
+- 文档可能有误
+
+**依赖关系**:
+- 依赖6.10.1部署准备完成
 
 ---
 
