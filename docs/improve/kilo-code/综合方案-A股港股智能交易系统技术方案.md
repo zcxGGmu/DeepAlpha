@@ -5,7 +5,8 @@
 - **项目名称**: AlphaStock-Trader
 - **版本**: v1.0.0
 - **创建日期**: 2026-01-01
-- **技术栈**: Python 3.11+
+- **后端技术栈**: Python 3.11+
+- **前端技术栈**: React 18 + TypeScript + Vite
 - **目标市场**: A股、港股
 
 ---
@@ -37,7 +38,12 @@
 - **技术指标**: MA、MACD、RSI（同花顺风格）、布林带
 - **实时交易**: 支持实时行情监控和自动交易
 - **回测系统**: 完整的回测框架
-- **Web界面**: FastAPI后端 + Streamlit前端
+- **Web界面**: FastAPI后端 + React前端（参考NOFX前端实现）
+  - React 18.3.1 + TypeScript 5.8.3 + Vite 6.0.7
+  - Zustand 5.0.2 状态管理
+  - Recharts 2.15.2 + Lightweight Charts 5.1.0 图表库
+  - Framer Motion 12.23.24 动画库
+  - TailwindCSS 3.4.17 + Radix UI UI组件库
 
 ---
 
@@ -136,17 +142,33 @@
 
 ## 3. 技术栈
 
-### 3.1 核心框架
+### 3.1 后端核心框架
 
 | 框架/库 | 版本 | 用途 |
 |---------|------|------|
 | **Python** | 3.11+ | 编程语言 |
 | **fastapi** | 0.116+ | Web API框架 |
 | **uvicorn** | - | ASGI服务器 |
-| **streamlit** | 1.49+ | Web前端 |
 | **pydantic** | 2.x | 数据验证 |
 
-### 3.2 AI框架
+### 3.2 前端核心框架
+
+| 框架/库 | 版本 | 用途 |
+|---------|------|------|
+| **React** | 18.3.1 | UI框架 |
+| **TypeScript** | 5.8.3 | 类型系统 |
+| **Vite** | 6.0.7 | 构建工具 |
+| **Zustand** | 5.0.2 | 状态管理 |
+| **Recharts** | 2.15.2 | 图表库 |
+| **Lightweight Charts** | 5.1.0 | K线图库 |
+| **Framer Motion** | 12.23.24 | 动画库 |
+| **TailwindCSS** | 3.4.17 | CSS框架 |
+| **Radix UI** | - | UI组件库 |
+| **Lucide React** | - | 图标库 |
+| **date-fns** | - | 日期处理 |
+| **axios** | - | HTTP客户端 |
+
+### 3.3 AI框架
 
 | 框架/库 | 版本 | 用途 |
 |---------|------|------|
@@ -155,7 +177,7 @@
 | **langchain-openai** | - | OpenAI兼容接口 |
 | **chromadb** | 1.1+ | 向量数据库 |
 
-### 3.3 数据处理
+### 3.4 数据处理
 
 | 框架/库 | 版本 | 用途 |
 |---------|------|------|
@@ -165,7 +187,7 @@
 | **tushare** | 1.4+ | A股数据源 |
 | **baostock** | 0.8+ | A股数据源 |
 
-### 3.4 数据库
+### 3.5 数据库
 
 | 框架/库 | 版本 | 用途 |
 |---------|------|------|
@@ -174,7 +196,7 @@
 | **redis** | - | Redis客户端 |
 | **aioredis** | - | Redis异步客户端 |
 
-### 3.5 任务调度
+### 3.6 任务调度
 
 | 框架/库 | 版本 | 用途 |
 |---------|------|------|
@@ -182,7 +204,7 @@
 | **celery** | - | 分布式任务队列 |
 | **asyncio** | - | 异步编程 |
 
-### 3.6 其他依赖
+### 3.7 后端其他依赖
 
 | 框架/库 | 版本 | 用途 |
 |---------|------|------|
@@ -193,6 +215,20 @@
 | **bcrypt** | - | 密码加密 |
 | **python-dateutil** | - | 日期处理 |
 | **tzdata** | - | 时区数据 |
+
+### 3.8 前端开发工具
+
+| 框架/库 | 版本 | 用途 |
+|---------|------|------|
+| **@vitejs/plugin-react** | - | Vite React插件 |
+| **@types/react** | - | React类型定义 |
+| **@types/react-dom** | - | React DOM类型定义 |
+| **eslint** | - | 代码检查 |
+| **eslint-plugin-react** | - | React ESLint插件 |
+| **eslint-plugin-react-hooks** | - | React Hooks插件 |
+| **prettier** | - | 代码格式化 |
+| **postcss** | - | CSS处理 |
+| **autoprefixer** | - | CSS自动前缀 |
 
 ---
 
@@ -222,6 +258,35 @@ AlphaStock-Trader/
 │   │   ├── backtest_service.py # 回测服务
 │   │   └── risk_service.py  # 风险服务
 │   └── main.py               # 应用入口
+├── frontend/                  # React前端（参考NOFX前端实现）
+│   ├── public/               # 静态资源
+│   │   ├── images/           # 图片资源
+│   │   ├── icons/            # 图标资源
+│   │   └── exchange-icons/  # 交易所图标
+│   ├── src/                  # 源代码
+│   │   ├── components/       # 组件库
+│   │   │   ├── charts/          # 图表组件
+│   │   │   ├── ui/              # UI组件
+│   │   │   ├── strategy/        # 策略组件
+│   │   │   ├── traders/         # 交易者组件
+│   │   │   ├── landing/         # Landing页面
+│   │   │   ├── faq/             # FAQ组件
+│   │   ├── pages/            # 页面组件
+│   │   ├── contexts/         # 上下文管理
+│   │   ├── hooks/            # 自定义Hooks
+│   │   ├── stores/           # 状态管理
+│   │   ├── utils/            # 工具函数
+│   │   ├── constants/        # 常量定义
+│   │   ├── types.ts          # TypeScript类型定义
+│   │   ├── App.tsx           # 应用入口
+│   │   └── main.tsx          # 主页面
+│   ├── package.json           # 依赖配置
+│   ├── vite.config.ts         # Vite配置
+│   ├── tailwind.config.js      # TailwindCSS配置
+│   ├── tsconfig.json         # TypeScript配置
+│   ├── .eslintrc.js         # ESLint配置
+│   ├── .prettierrc.json      # Prettier配置
+│   └── index.html            # HTML入口
 ├── agents/                    # 智能体模块
 │   ├── analysts/              # 分析师
 │   │   ├── market_analyst.py
@@ -273,13 +338,6 @@ AlphaStock-Trader/
 ├── config/                    # 配置文件
 │   ├── default_config.py    # 默认配置
 │   └── runtime_settings.py  # 运行时配置
-├── frontend/                  # Streamlit前端
-│   ├── pages/               # 页面
-│   │   ├── dashboard.py    # 仪表板
-│   │   ├── analysis.py     # 分析页面
-│   │   ├── trading.py      # 交易页面
-│   │   └── backtest.py     # 回测页面
-│   └── components/          # 组件
 ├── tests/                     # 测试
 │   ├── unit/                # 单元测试
 │   └── integration/         # 集成测试
@@ -290,7 +348,972 @@ AlphaStock-Trader/
 └── README.md                 # 项目说明
 ```
 
-### 4.2 智能体工作流
+### 4.2 前端架构设计（参考NOFX前端实现）
+
+#### 4.2.1 前端技术栈详解
+
+**核心框架**:
+- **React 18.3.1**: 采用最新的React特性，包括Hooks、Suspense、Concurrent Mode
+- **TypeScript 5.8.3**: 强类型系统，提供完整的类型安全和智能提示
+- **Vite 6.0.7**: 极速的构建工具，支持HMR（热模块替换）和优化的生产构建
+
+**状态管理**:
+- **Zustand 5.0.2**: 轻量级状态管理库，API简洁，性能优异
+  - 全局状态管理（用户信息、交易状态、市场数据）
+  - 持久化存储（localStorage同步）
+  - 中间件支持（日志、时间旅行）
+
+**UI组件库**:
+- **Radix UI**: 无样式的可访问性组件库
+  - Dialog、Dropdown Menu、Popover、Tooltip、Toast等
+  - 完整的键盘导航和屏幕阅读器支持
+- **TailwindCSS 3.4.17**: 实用优先的CSS框架
+  - 响应式设计
+  - 深色模式支持
+  - 自定义主题配置
+
+**图表库**:
+- **Recharts 2.15.2**: 声明式React图表库
+  - LineChart、BarChart、AreaChart、PieChart等
+  - 自定义Tooltip和Legend
+  - 响应式图表
+- **Lightweight Charts 5.1.0**: 高性能K线图库
+  - 专业的金融图表
+  - 实时数据更新
+  - 缩放和平移支持
+
+**动画库**:
+- **Framer Motion 12.23.24**: React动画库
+  - 页面过渡动画
+  - 手势支持
+  - 布局动画
+
+**工具库**:
+- **Lucide React**: 图标库（200+图标）
+- **date-fns**: 日期处理工具
+- **axios**: HTTP客户端，支持拦截器
+- **clsx**: 条件类名工具
+
+#### 4.2.2 前端项目结构详解
+
+```
+frontend/
+├── public/                          # 静态资源
+│   ├── images/                      # 图片资源
+│   │   ├── logo.png                # Logo
+│   │   ├── hero-bg.png             # 首页背景
+│   │   └── trading-bg.png          # 交易背景
+│   ├── icons/                       # 图标资源
+│   │   ├── exchanges/              # 交易所图标
+│   │   │   ├── a-share.svg         # A股图标
+│   │   │   ├── hk-stock.svg         # 港股图标
+│   │   │   └── us-stock.svg         # 美股图标
+│   │   └── strategies/             # 策略图标
+│   ├── fonts/                       # 字体文件
+│   └── favicon.ico                  # 网站图标
+├── src/                            # 源代码
+│   ├── components/                  # 组件库
+│   │   ├── charts/                 # 图表组件
+│   │   │   ├── CandlestickChart.tsx     # K线图组件
+│   │   │   ├── LineChart.tsx            # 折线图组件
+│   │   │   ├── BarChart.tsx             # 柱状图组件
+│   │   │   ├── PieChart.tsx             # 饼图组件
+│   │   │   ├── EquityCurve.tsx          # 权益曲线
+│   │   │   └── DrawdownChart.tsx        # 回撤图
+│   │   ├── ui/                     # UI组件（基于Radix UI）
+│   │   │   ├── Button.tsx              # 按钮组件
+│   │   │   ├── Card.tsx                # 卡片组件
+│   │   │   ├── Dialog.tsx              # 对话框
+│   │   │   ├── DropdownMenu.tsx        # 下拉菜单
+│   │   │   ├── Input.tsx               # 输入框
+│   │   │   ├── Select.tsx              # 选择器
+│   │   │   ├── Table.tsx               # 表格
+│   │   │   ├── Tabs.tsx                # 标签页
+│   │   │   ├── Toast.tsx               # 提示消息
+│   │   │   └── Loading.tsx             # 加载动画
+│   │   ├── strategy/               # 策略组件
+│   │   │   ├── StrategyCard.tsx        # 策略卡片
+│   │   │   ├── StrategyList.tsx        # 策略列表
+│   │   │   ├── StrategyDetail.tsx      # 策略详情
+│   │   │   ├── StrategyConfig.tsx      # 策略配置
+│   │   │   └── StrategyPerformance.tsx # 策略绩效
+│   │   ├── traders/                # 交易者组件
+│   │   │   ├── TraderCard.tsx          # 交易者卡片
+│   │   │   ├── TraderList.tsx          # 交易者列表
+│   │   │   ├── TraderDetail.tsx        # 交易者详情
+│   │   │   └── TraderPerformance.tsx   # 交易者绩效
+│   │   ├── landing/                # Landing页面组件
+│   │   │   ├── Hero.tsx                # 首页Hero区域
+│   │   │   ├── Features.tsx             # 特性展示
+│   │   │   ├── HowItWorks.tsx          # 工作流程
+│   │   │   ├── Testimonials.tsx        # 用户评价
+│   │   │   └── CTA.tsx                 # 行动号召
+│   │   ├── faq/                    # FAQ组件
+│   │   │   ├── FAQItem.tsx             # FAQ单项
+│   │   │   └── FAQList.tsx             # FAQ列表
+│   │   └── common/                 # 通用组件
+│   │       ├── Header.tsx              # 页头
+│   │       ├── Footer.tsx              # 页脚
+│   │       ├── Sidebar.tsx             # 侧边栏
+│   │       └── Layout.tsx              # 布局
+│   ├── pages/                       # 页面组件
+│   │   ├── Dashboard.tsx              # 仪表板页面
+│   │   ├── Analysis.tsx               # 分析页面
+│   │   ├── Trading.tsx                # 交易页面
+│   │   ├── Backtest.tsx               # 回测页面
+│   │   ├── Portfolio.tsx              # 投资组合页面
+│   │   ├── Settings.tsx               # 设置页面
+│   │   └── Landing.tsx                # Landing页面
+│   ├── contexts/                    # 上下文管理
+│   │   ├── AuthContext.tsx           # 认证上下文
+│   │   ├── ThemeContext.tsx          # 主题上下文
+│   │   └── WebSocketContext.tsx       # WebSocket上下文
+│   ├── hooks/                       # 自定义Hooks
+│   │   ├── useAuth.ts                # 认证Hook
+│   │   ├── useTheme.ts               # 主题Hook
+│   │   ├── useWebSocket.ts           # WebSocket Hook
+│   │   ├── useMarketData.ts          # 市场数据Hook
+│   │   ├── useAnalysis.ts            # 分析Hook
+│   │   ├── useTrading.ts             # 交易Hook
+│   │   ├── useBacktest.ts            # 回测Hook
+│   │   └── useDebounce.ts            # 防抖Hook
+│   ├── stores/                      # Zustand状态管理
+│   │   ├── authStore.ts              # 认证状态
+│   │   ├── marketStore.ts            # 市场数据状态
+│   │   ├── tradingStore.ts           # 交易状态
+│   │   ├── analysisStore.ts          # 分析状态
+│   │   ├── backtestStore.ts          # 回测状态
+│   │   ├── portfolioStore.ts         # 投资组合状态
+│   │   └── settingsStore.ts          # 设置状态
+│   ├── services/                    # API服务
+│   │   ├── api.ts                    # API基础配置
+│   │   ├── authApi.ts                # 认证API
+│   │   ├── marketApi.ts              # 市场数据API
+│   │   ├── tradingApi.ts             # 交易API
+│   │   ├── analysisApi.ts           # 分析API
+│   │   ├── backtestApi.ts            # 回测API
+│   │   └── portfolioApi.ts           # 投资组合API
+│   ├── utils/                       # 工具函数
+│   │   ├── format.ts                 # 格式化工具
+│   │   ├── date.ts                   # 日期工具
+│   │   ├── validation.ts             # 验证工具
+│   │   ├── cn.ts                     # 类名合并
+│   │   └── constants.ts              # 常量
+│   ├── types/                       # TypeScript类型定义
+│   │   ├── index.ts                  # 类型导出
+│   │   ├── auth.ts                   # 认证类型
+│   │   ├── market.ts                 # 市场类型
+│   │   ├── trading.ts                # 交易类型
+│   │   ├── analysis.ts               # 分析类型
+│   │   ├── backtest.ts               # 回测类型
+│   │   └── portfolio.ts              # 投资组合类型
+│   ├── constants/                   # 常量定义
+│   │   ├── index.ts                  # 常量导出
+│   │   ├── exchanges.ts              # 交易所常量
+│   │   ├── markets.ts                # 市场常量
+│   │   ├── strategies.ts             # 策略常量
+│   │   └── traders.ts                # 交易者常量
+│   ├── styles/                      # 样式文件
+│   │   ├── globals.css               # 全局样式
+│   │   └── themes.css                # 主题样式
+│   ├── App.tsx                      # 应用入口组件
+│   ├── main.tsx                     # 主入口文件
+│   └── vite-env.d.ts                # Vite类型声明
+├── package.json                    # 依赖配置
+├── vite.config.ts                  # Vite配置
+├── tailwind.config.js              # TailwindCSS配置
+├── tsconfig.json                   # TypeScript配置
+├── tsconfig.node.json              # Node TypeScript配置
+├── .eslintrc.js                    # ESLint配置
+├── .prettierrc.json                # Prettier配置
+├── .env.example                    # 环境变量示例
+└── index.html                      # HTML入口
+```
+
+#### 4.2.3 前端核心模块设计
+
+##### 4.2.3.1 状态管理（Zustand）
+
+**认证状态管理** (`stores/authStore.ts`):
+```typescript
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => void;
+  refreshToken: () => Promise<void>;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      
+      login: async (credentials) => {
+        const response = await authApi.login(credentials);
+        set({
+          user: response.user,
+          token: response.token,
+          isAuthenticated: true
+        });
+      },
+      
+      logout: () => {
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false
+        });
+      },
+      
+      refreshToken: async () => {
+        const response = await authApi.refreshToken();
+        set({
+          token: response.token,
+          user: response.user
+        });
+      }
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user
+      })
+    }
+  )
+);
+```
+
+**市场数据状态管理** (`stores/marketStore.ts`):
+```typescript
+import { create } from 'zustand';
+
+interface MarketState {
+  stocks: Record<string, StockData>;
+  indices: Record<string, IndexData>;
+  lastUpdate: Date | null;
+  isLoading: boolean;
+  error: string | null;
+  
+  fetchStockData: (symbol: string) => Promise<void>;
+  fetchIndexData: (symbol: string) => Promise<void>;
+  updateStockData: (symbol: string, data: StockData) => void;
+  clearError: () => void;
+}
+
+export const useMarketStore = create<MarketState>((set, get) => ({
+  stocks: {},
+  indices: {},
+  lastUpdate: null,
+  isLoading: false,
+  error: null,
+  
+  fetchStockData: async (symbol) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await marketApi.getStockData(symbol);
+      set((state) => ({
+        stocks: { ...state.stocks, [symbol]: data },
+        lastUpdate: new Date(),
+        isLoading: false
+      }));
+    } catch (error) {
+      set({
+        error: error.message,
+        isLoading: false
+      });
+    }
+  },
+  
+  fetchIndexData: async (symbol) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await marketApi.getIndexData(symbol);
+      set((state) => ({
+        indices: { ...state.indices, [symbol]: data },
+        lastUpdate: new Date(),
+        isLoading: false
+      }));
+    } catch (error) {
+      set({
+        error: error.message,
+        isLoading: false
+      });
+    }
+  },
+  
+  updateStockData: (symbol, data) => {
+    set((state) => ({
+      stocks: { ...state.stocks, [symbol]: data }
+    }));
+  },
+  
+  clearError: () => {
+    set({ error: null });
+  }
+}));
+```
+
+##### 4.2.3.2 自定义Hooks
+
+**市场数据Hook** (`hooks/useMarketData.ts`):
+```typescript
+import { useEffect, useState } from 'react';
+import { useMarketStore } from '../stores/marketStore';
+import { useWebSocket } from './useWebSocket';
+
+export function useMarketData(symbol: string) {
+  const { stocks, fetchStockData, updateStockData } = useMarketStore();
+  const { isConnected, subscribe, unsubscribe } = useWebSocket();
+  const [isRealtime, setIsRealtime] = useState(false);
+  
+  useEffect(() => {
+    // 初始加载数据
+    fetchStockData(symbol);
+    
+    // 订阅实时数据
+    if (isConnected) {
+      subscribe(`stock:${symbol}`, (data) => {
+        updateStockData(symbol, data);
+        setIsRealtime(true);
+      });
+    }
+    
+    return () => {
+      unsubscribe(`stock:${symbol}`);
+    };
+  }, [symbol, isConnected]);
+  
+  return {
+    data: stocks[symbol],
+    isLoading: !stocks[symbol],
+    isRealtime
+  };
+}
+```
+
+**分析Hook** (`hooks/useAnalysis.ts`):
+```typescript
+import { useState } from 'react';
+import { analysisApi } from '../services/analysisApi';
+import { useAuthStore } from '../stores/authStore';
+
+export function useAnalysis() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { token } = useAuthStore();
+  
+  const analyzeStock = async (symbol: string, options: AnalysisOptions) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await analysisApi.analyzeStock(symbol, options, token);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const getAnalysisHistory = async (symbol: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const history = await analysisApi.getAnalysisHistory(symbol, token);
+      return history;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return {
+    analyzeStock,
+    getAnalysisHistory,
+    isLoading,
+    error
+  };
+}
+```
+
+##### 4.2.3.3 图表组件
+
+**K线图组件** (`components/charts/CandlestickChart.tsx`):
+```typescript
+import React, { useEffect, useRef } from 'react';
+import { createChart, IChartApi, ISeriesApi, CandlestickData } from 'lightweight-charts';
+
+interface CandlestickChartProps {
+  data: CandlestickData[];
+  width?: number;
+  height?: number;
+}
+
+export function CandlestickChart({ data, width = 800, height = 400 }: CandlestickChartProps) {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
+  
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+    
+    // 创建图表
+    const chart = createChart(chartContainerRef.current, {
+      width,
+      height,
+      layout: {
+        background: { color: '#1a1a1a' },
+        textColor: '#d1d5db'
+      },
+      grid: {
+        vertLines: { color: '#2a2a2a' },
+        horzLines: { color: '#2a2a2a' }
+      },
+      crosshair: {
+        mode: 1,
+        vertLine: {
+          color: '#758696',
+          width: 1,
+          style: 3
+        },
+        horzLine: {
+          color: '#758696',
+          width: 1,
+          style: 3
+        }
+      },
+      rightPriceScale: {
+        borderColor: '#2a2a2a'
+      },
+      timeScale: {
+        borderColor: '#2a2a2a',
+        timeVisible: true,
+        secondsVisible: false
+      }
+    });
+    
+    // 创建K线系列
+    const series = chart.addCandlestickSeries({
+      upColor: '#10b981',
+      downColor: '#ef4444',
+      borderDownColor: '#ef4444',
+      borderUpColor: '#10b981',
+      wickDownColor: '#ef4444',
+      wickUpColor: '#10b981'
+    });
+    
+    // 设置数据
+    series.setData(data);
+    
+    chartRef.current = chart;
+    seriesRef.current = series;
+    
+    // 响应式调整
+    const handleResize = () => {
+      if (chartContainerRef.current) {
+        chart.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+          height: chartContainerRef.current.clientHeight
+        });
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      chart.remove();
+    };
+  }, []);
+  
+  useEffect(() => {
+    if (seriesRef.current) {
+      seriesRef.current.setData(data);
+    }
+  }, [data]);
+  
+  return (
+    <div
+      ref={chartContainerRef}
+      style={{ width: '100%', height: `${height}px` }}
+    />
+  );
+}
+```
+
+**权益曲线组件** (`components/charts/EquityCurve.tsx`):
+```typescript
+import React from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
+
+interface EquityCurveProps {
+  data: Array<{
+    date: string;
+    equity: number;
+    benchmark?: number;
+  }>;
+}
+
+export function EquityCurve({ data }: EquityCurveProps) {
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
+        <XAxis
+          dataKey="date"
+          stroke="#d1d5db"
+          tick={{ fill: '#d1d5db' }}
+        />
+        <YAxis
+          stroke="#d1d5db"
+          tick={{ fill: '#d1d5db' }}
+          tickFormatter={(value) => `¥${value.toLocaleString()}`}
+        />
+        <Tooltip
+          contentStyle={{
+            backgroundColor: '#1a1a1a',
+            border: '1px solid #2a2a2a',
+            borderRadius: '8px'
+          }}
+          labelStyle={{ color: '#d1d5db' }}
+          itemStyle={{ color: '#d1d5db' }}
+          formatter={(value: number) => `¥${value.toLocaleString()}`}
+        />
+        <Legend />
+        <Line
+          type="monotone"
+          dataKey="equity"
+          stroke="#10b981"
+          strokeWidth={2}
+          dot={false}
+          name="策略收益"
+        />
+        {data[0]?.benchmark && (
+          <Line
+            type="monotone"
+            dataKey="benchmark"
+            stroke="#6b7280"
+            strokeWidth={2}
+            dot={false}
+            strokeDasharray="5 5"
+            name="基准收益"
+          />
+        )}
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+```
+
+##### 4.2.3.4 页面组件
+
+**仪表板页面** (`pages/Dashboard.tsx`):
+```typescript
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useAuthStore } from '../stores/authStore';
+import { Card } from '../components/ui/Card';
+import { CandlestickChart } from '../components/charts/CandlestickChart';
+import { EquityCurve } from '../components/charts/EquityCurve';
+import { StrategyList } from '../components/strategy/StrategyList';
+import { TraderList } from '../components/traders/TraderList';
+
+export function Dashboard() {
+  const { user } = useAuthStore();
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      {/* 欢迎区域 */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          欢迎回来，{user?.name}
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          今日市场概览和投资组合状态
+        </p>
+      </div>
+      
+      {/* 关键指标 */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <div className="p-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400">总资产</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
+              ¥1,234,567.89
+            </p>
+            <p className="text-sm text-green-600 mt-2">+12.34%</p>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="p-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400">今日收益</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-2">
+              +¥12,345.67
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">+1.00%</p>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="p-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400">持仓数量</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
+              12
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">3个策略</p>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="p-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400">胜率</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
+              67.5%
+            </p>
+            <p className="text-sm text-green-600 mt-2">+2.3%</p>
+          </div>
+        </Card>
+      </div>
+      
+      {/* 图表区域 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              权益曲线
+            </h2>
+            <EquityCurve data={equityData} />
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              持仓分布
+            </h2>
+            {/* 持仓分布图表 */}
+          </div>
+        </Card>
+      </div>
+      
+      {/* 策略和交易者 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              活跃策略
+            </h2>
+            <StrategyList />
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              AI交易者
+            </h2>
+            <TraderList />
+          </div>
+        </Card>
+      </div>
+    </motion.div>
+  );
+}
+```
+
+##### 4.2.3.5 API服务
+
+**API基础配置** (`services/api.ts`):
+```typescript
+import axios, { AxiosInstance, AxiosError } from 'axios';
+import { useAuthStore } from '../stores/authStore';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+export const api: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// 请求拦截器
+api.interceptors.request.use(
+  (config) => {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 响应拦截器
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as any;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        await useAuthStore.getState().refreshToken();
+        const token = useAuthStore.getState().token;
+        
+        if (token) {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+```
+
+**市场数据API** (`services/marketApi.ts`):
+```typescript
+import { api } from './api';
+
+export interface StockData {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  volume: number;
+  high: number;
+  low: number;
+  open: number;
+  close: number;
+  timestamp: string;
+}
+
+export interface IndexData {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  timestamp: string;
+}
+
+export const marketApi = {
+  getStockData: async (symbol: string): Promise<StockData> => {
+    const response = await api.get(`/api/market/stocks/${symbol}`);
+    return response.data;
+  },
+  
+  getStockHistory: async (symbol: string, period: string): Promise<StockData[]> => {
+    const response = await api.get(`/api/market/stocks/${symbol}/history`, {
+      params: { period }
+    });
+    return response.data;
+  },
+  
+  getIndexData: async (symbol: string): Promise<IndexData> => {
+    const response = await api.get(`/api/market/indices/${symbol}`);
+    return response.data;
+  },
+  
+  searchStocks: async (query: string): Promise<StockData[]> => {
+    const response = await api.get('/api/market/search', {
+      params: { q: query }
+    });
+    return response.data;
+  }
+};
+```
+
+#### 4.2.4 前端配置文件
+
+**package.json**:
+```json
+{
+  "name": "alphastock-trader-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.22.0",
+    "zustand": "^5.0.2",
+    "recharts": "^2.15.2",
+    "lightweight-charts": "^5.1.0",
+    "framer-motion": "^12.23.24",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.2.1",
+    "lucide-react": "^0.344.0",
+    "date-fns": "^3.3.1",
+    "axios": "^1.6.7",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-toast": "^1.1.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "prettier": "^3.2.5",
+    "typescript": "^5.8.3",
+    "vite": "^6.0.7",
+    "tailwindcss": "^3.4.17",
+    "postcss": "^8.4.35",
+    "autoprefixer": "^10.4.17"
+  }
+}
+```
+
+**vite.config.ts**:
+```typescript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@pages': path.resolve(__dirname, './src/pages'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@stores': path.resolve(__dirname, './src/stores'),
+      '@services': path.resolve(__dirname, './src/services'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@types': path.resolve(__dirname, './src/types'),
+      '@constants': path.resolve(__dirname, './src/constants')
+    }
+  },
+  server: {
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/ws': {
+        target: 'ws://localhost:8000',
+        ws: true
+      }
+    }
+  }
+});
+```
+
+**tailwind.config.js**:
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: 'class',
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+        },
+        dark: {
+          50: '#1a1a1a',
+          100: '#2a2a2a',
+          200: '#3a3a3a',
+          300: '#4a4a4a',
+          400: '#5a5a5a',
+          500: '#6a6a6a',
+          600: '#7a7a7a',
+          700: '#8a8a8a',
+          800: '#9a9a9a',
+          900: '#aaaaaa',
+        }
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.5s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+      },
+    },
+  },
+  plugins: [],
+}
+```
+
+### 4.3 智能体工作流
 
 ```mermaid
 graph TD
@@ -1476,6 +2499,7 @@ class BacktestEngine:
 3. 实现分析接口
 4. 实现交易接口
 5. 实现回测接口
+6. 实现WebSocket实时推送
 
 **交付物**:
 - app/main.py
@@ -1483,22 +2507,168 @@ class BacktestEngine:
 - app/api/analysis.py
 - app/api/trading.py
 - app/api/backtest.py
+- WebSocket实时推送模块
 
-#### 6.8.2 Streamlit前端
+#### 6.8.2 React前端开发（参考NOFX前端实现）
+
+**任务**:
+1. 前端项目初始化和配置
+2. 实现UI组件库（基于Radix UI）
+3. 实现图表组件（Recharts + Lightweight Charts）
+4. 实现状态管理（Zustand）
+5. 实现自定义Hooks
+6. 实现API服务层
+7. 实现页面组件
+
+**交付物**:
+- 前端项目结构和配置文件
+- UI组件库（Button、Card、Dialog、Input、Select、Table、Tabs、Toast等）
+- 图表组件（CandlestickChart、LineChart、BarChart、PieChart、EquityCurve等）
+- Zustand状态管理（authStore、marketStore、tradingStore、analysisStore、backtestStore、portfolioStore、settingsStore）
+- 自定义Hooks（useAuth、useTheme、useWebSocket、useMarketData、useAnalysis、useTrading、useBacktest）
+- API服务层（api、authApi、marketApi、tradingApi、analysisApi、backtestApi、portfolioApi）
+- 页面组件（Dashboard、Analysis、Trading、Backtest、Portfolio、Settings、Landing）
+
+#### 6.8.2.1 前端项目初始化
+
+**任务**:
+1. 创建Vite + React + TypeScript项目
+2. 配置TailwindCSS
+3. 配置ESLint和Prettier
+4. 配置路径别名
+5. 配置开发服务器代理
+
+**交付物**:
+- package.json
+- vite.config.ts
+- tailwind.config.js
+- tsconfig.json
+- .eslintrc.js
+- .prettierrc.json
+
+#### 6.8.2.2 UI组件库开发
+
+**任务**:
+1. 实现Button组件
+2. 实现Card组件
+3. 实现Dialog组件
+4. 实现Input组件
+5. 实现Select组件
+6. 实现Table组件
+7. 实现Tabs组件
+8. 实现Toast组件
+9. 实现Loading组件
+
+**交付物**:
+- frontend/components/ui/Button.tsx
+- frontend/components/ui/Card.tsx
+- frontend/components/ui/Dialog.tsx
+- frontend/components/ui/Input.tsx
+- frontend/components/ui/Select.tsx
+- frontend/components/ui/Table.tsx
+- frontend/components/ui/Tabs.tsx
+- frontend/components/ui/Toast.tsx
+- frontend/components/ui/Loading.tsx
+
+#### 6.8.2.3 图表组件开发
+
+**任务**:
+1. 实现K线图组件（Lightweight Charts）
+2. 实现折线图组件（Recharts）
+3. 实现柱状图组件（Recharts）
+4. 实现饼图组件（Recharts）
+5. 实现权益曲线组件
+6. 实现回撤图组件
+
+**交付物**:
+- frontend/components/charts/CandlestickChart.tsx
+- frontend/components/charts/LineChart.tsx
+- frontend/components/charts/BarChart.tsx
+- frontend/components/charts/PieChart.tsx
+- frontend/components/charts/EquityCurve.tsx
+- frontend/components/charts/DrawdownChart.tsx
+
+#### 6.8.2.4 状态管理开发
+
+**任务**:
+1. 实现认证状态管理
+2. 实现市场数据状态管理
+3. 实现交易状态管理
+4. 实现分析状态管理
+5. 实现回测状态管理
+6. 实现投资组合状态管理
+7. 实现设置状态管理
+
+**交付物**:
+- frontend/stores/authStore.ts
+- frontend/stores/marketStore.ts
+- frontend/stores/tradingStore.ts
+- frontend/stores/analysisStore.ts
+- frontend/stores/backtestStore.ts
+- frontend/stores/portfolioStore.ts
+- frontend/stores/settingsStore.ts
+
+#### 6.8.2.5 自定义Hooks开发
+
+**任务**:
+1. 实现认证Hook
+2. 实现主题Hook
+3. 实现WebSocket Hook
+4. 实现市场数据Hook
+5. 实现分析Hook
+6. 实现交易Hook
+7. 实现回测Hook
+8. 实现防抖Hook
+
+**交付物**:
+- frontend/hooks/useAuth.ts
+- frontend/hooks/useTheme.ts
+- frontend/hooks/useWebSocket.ts
+- frontend/hooks/useMarketData.ts
+- frontend/hooks/useAnalysis.ts
+- frontend/hooks/useTrading.ts
+- frontend/hooks/useBacktest.ts
+- frontend/hooks/useDebounce.ts
+
+#### 6.8.2.6 API服务层开发
+
+**任务**:
+1. 实现API基础配置（axios + 拦截器）
+2. 实现认证API
+3. 实现市场数据API
+4. 实现交易API
+5. 实现分析API
+6. 实现回测API
+7. 实现投资组合API
+
+**交付物**:
+- frontend/services/api.ts
+- frontend/services/authApi.ts
+- frontend/services/marketApi.ts
+- frontend/services/tradingApi.ts
+- frontend/services/analysisApi.ts
+- frontend/services/backtestApi.ts
+- frontend/services/portfolioApi.ts
+
+#### 6.8.2.7 页面组件开发
 
 **任务**:
 1. 实现仪表板页面
 2. 实现分析页面
 3. 实现交易页面
 4. 实现回测页面
-5. 实现图表可视化
+5. 实现投资组合页面
+6. 实现设置页面
+7. 实现Landing页面
 
 **交付物**:
-- frontend/pages/dashboard.py
-- frontend/pages/analysis.py
-- frontend/pages/trading.py
-- frontend/pages/backtest.py
-- 图表组件
+- frontend/pages/Dashboard.tsx
+- frontend/pages/Analysis.tsx
+- frontend/pages/Trading.tsx
+- frontend/pages/Backtest.tsx
+- frontend/pages/Portfolio.tsx
+- frontend/pages/Settings.tsx
+- frontend/pages/Landing.tsx
 
 ### 6.9 第九阶段：测试和优化（2周）
 
