@@ -456,7 +456,283 @@ data['rsi6'] = 100 - (100 / (1 + rs6))
 - 自动识别股票类型
 - DashScope/DeepSeek/Zhipu 预处理强制新闻获取
 
-#### 3.4.7 风险管理
+#### 3.4.7 投资辩论机制
+
+**看涨研究员**: [`create_bull_researcher()`](posp/trading/TradingAgents-CN/tradingagents/agents/researchers/bull_researcher.py:9)
+
+**核心职责**:
+- 构建看涨投资论点，强调股票的增长潜力
+- 识别并强调公司的竞争优势和积极因素
+- 基于技术指标和基本面数据提供看涨分析
+- 参与动态辩论，反驳看跌研究员的观点
+- 使用历史记忆进行学习，改进论点质量
+
+**Prompt 核心要素**:
+```python
+BULL_RESEARCHER_PROMPT = """
+你是看涨研究员，负责构建看涨投资论点。
+
+你的任务：
+1. 强调增长潜力：分析公司的成长性、市场机会、竞争优势
+2. 识别积极因素：技术指标看涨信号、基本面改善、利好消息
+3. 反驳看跌观点：针对看跌研究员的观点进行有理有据的反驳
+4. 参与动态辩论：根据辩论历史调整你的论点
+
+关键要求：
+- 必须基于数据和分析，不能凭空臆测
+- 必须提供具体的证据支持你的观点
+- 必须反驳看跌研究员的观点
+- 必须学习历史经验，避免重复错误
+
+输出格式：
+- 看涨论点（3-5条）
+- 证据支持（每条论点至少2个证据）
+- 反驳看跌观点
+- 投资建议（强烈买入/买入/持有）
+"""
+```
+
+**记忆学习机制**:
+- 使用 ChromaDB 向量数据库存储历史辩论
+- 通过语义搜索检索相关历史经验
+- 基于历史成功/失败的论点改进当前分析
+
+**看跌研究员**: [`create_bear_researcher()`](posp/trading/TradingAgents-CN/tradingagents/agents/researchers/bear_researcher.py:9)
+
+**核心职责**:
+- 构建看跌投资论点，强调股票的风险和挑战
+- 识别并强调公司的负面因素和潜在风险
+- 基于技术指标和基本面数据提供看跌分析
+- 参与动态辩论，反驳看涨研究员的观点
+- 使用历史记忆进行学习，改进论点质量
+
+**Prompt 核心要素**:
+```python
+BEAR_RESEARCHER_PROMPT = """
+你是看跌研究员，负责构建看跌投资论点。
+
+你的任务：
+1. 强调风险挑战：分析公司的财务风险、市场风险、竞争风险
+2. 识别负面因素：技术指标看跌信号、基本面恶化、利空消息
+3. 反驳看涨观点：针对看涨研究员的观点进行有理有据的反驳
+4. 参与动态辩论：根据辩论历史调整你的论点
+
+关键要求：
+- 必须基于数据和分析，不能凭空臆测
+- 必须提供具体的证据支持你的观点
+- 必须反驳看涨研究员的观点
+- 必须学习历史经验，避免重复错误
+
+输出格式：
+- 看跌论点（3-5条）
+- 证据支持（每条论点至少2个证据）
+- 反驳看涨观点
+- 投资建议（强烈卖出/卖出/持有）
+"""
+```
+
+**辩论流程**:
+```mermaid
+sequenceDiagram
+    participant State as 状态
+    participant Bull as 看涨研究员
+    participant Bear as 看跌研究员
+    participant Memory as ChromaDB记忆
+    participant Judge as 研究经理
+
+    State->>Bull: 调用看涨研究员
+    Bull->>Memory: 检索历史经验
+    Memory-->>Bull: 返回相关记忆
+    Bull->>Bull: 构建看涨论点
+    Bull-->>State: 返回看涨报告
+    
+    State->>Bear: 调用看跌研究员
+    Bear->>Memory: 检索历史经验
+    Memory-->>Bear: 返回相关记忆
+    Bear->>Bear: 构建看跌论点
+    Bear-->>State: 返回看跌报告
+    
+    State->>State: 检查辩论是否继续
+    alt 辩论未达到最大轮次
+        State->>Bull: 继续辩论
+        Bull->>Bull: 反驳看跌观点
+        Bull-->>State: 返回反驳报告
+        State->>Bear: 继续辩论
+        Bear->>Bear: 反驳看涨观点
+        Bear-->>State: 返回反驳报告
+    else 辩论达到最大轮次
+        State->>Judge: 提交辩论结果
+    end
+```
+
+**辩论状态管理**:
+```python
+class InvestDebateState(TypedDict):
+    """投资辩论状态"""
+    bull_reports: List[str]      # 看涨研究员报告列表
+    bear_reports: List[str]      # 看跌研究员报告列表
+    debate_round: int            # 当前辩论轮次
+    max_debate_rounds: int       # 最大辩论轮次
+    continue_debate: bool        # 是否继续辩论
+```
+
+#### 3.4.8 风险管理机制
+
+**激进风险分析师**: [`create_risky_debator()`](posp/trading/TradingAgents-CN/tradingagents/agents/risk_mgmt/aggresive_debator.py:9)
+
+**核心职责**:
+- 主张高风险、高回报的投资机会
+- 评估交易员决策的风险收益比
+- 挑战保守和中性风险分析师的观点
+- 提供激进的风险评估和建议
+
+**Prompt 核心要素**:
+```python
+RISKY_DEBATOR_PROMPT = """
+你是激进风险分析师，主张高风险、高回报的投资策略。
+
+你的任务：
+1. 识别高回报机会：寻找具有巨大增长潜力的投资机会
+2. 评估风险收益比：计算潜在回报是否值得承担风险
+3. 挑战保守观点：反驳保守分析师的风险规避观点
+4. 评估交易员决策：判断交易员是否过于保守
+
+关键要求：
+- 必须基于数据和分析，不能凭空臆测
+- 必须提供具体的收益预期和风险评估
+- 必须挑战保守和中性分析师
+- 必须提供明确的投资建议
+
+输出格式：
+- 风险评估（激进/中性/保守）
+- 潜在回报预期（具体数字）
+- 风险因素分析
+- 投资建议（强烈买入/买入/持有）
+- 对交易员决策的评价
+"""
+```
+
+**Prompt 长度统计**:
+- 统计 Prompt 字符数和 Token 数
+- 估算输入 Token 使用量
+- 优化 Prompt 长度以控制成本
+
+**中性风险分析师**: [`create_neutral_debator()`](posp/trading/TradingAgents-CN/tradingagents/agents/risk_mgmt/neutral_debator.py:9)
+
+**核心职责**:
+- 提供平衡的风险评估，权衡潜在收益和风险
+- 评估上行和下行风险
+- 挑战激进和保守风险分析师的观点
+- 提供中性的风险管理建议
+
+**Prompt 核心要素**:
+```python
+NEUTRAL_DEBATOR_PROMPT = """
+你是中性风险分析师，提供平衡的风险评估。
+
+你的任务：
+1. 权衡收益风险：平衡评估潜在回报和潜在风险
+2. 评估上行下行：分析最佳情况和最坏情况
+3. 挑战极端观点：反驳激进和保守分析师的极端观点
+4. 提供中性建议：给出平衡的投资建议
+
+关键要求：
+- 必须基于数据和分析，不能凭空臆测
+- 必须提供平衡的风险评估
+- 必须挑战激进和保守分析师
+- 必须提供明确的中性建议
+
+输出格式：
+- 风险评估（激进/中性/保守）
+- 上行风险分析
+- 下行风险分析
+- 投资建议（买入/持有/卖出）
+- 风险管理建议
+"""
+```
+
+**保守风险分析师**: [`create_safe_debator()`](posp/trading/TradingAgents-CN/tradingagents/agents/risk_mgmt/conservative_debator.py:9)
+
+**核心职责**:
+- 保护资产，最小化波动性
+- 优先考虑稳定性和安全性
+- 识别和缓解潜在风险
+- 挑战激进和中性风险分析师的观点
+
+**Prompt 核心要素**:
+```python
+SAFE_DEBATOR_PROMPT = """
+你是保守风险分析师，专注于资产保护和稳定增长。
+
+你的任务：
+1. 保护资产：最小化损失风险，保护本金安全
+2. 最小化波动：选择低波动性的投资标的
+3. 确保稳定：优先考虑稳定增长的投资机会
+4. 风险缓解：识别并提供风险缓解策略
+
+关键要求：
+- 必须基于数据和分析，不能凭空臆测
+- 必须优先考虑资产安全
+- 必须挑战激进和中性分析师
+- 必须提供明确的保守建议
+
+输出格式：
+- 风险评估（激进/中性/保守）
+- 资产保护建议
+- 风险缓解策略
+- 投资建议（持有/卖出/观望）
+- 止损建议
+"""
+```
+
+**风险辩论流程**:
+```mermaid
+sequenceDiagram
+    participant State as 状态
+    participant Risky as 激进分析师
+    participant Neutral as 中性分析师
+    participant Safe as 保守分析师
+    participant Judge as 风险经理
+
+    State->>Risky: 调用激进分析师
+    Risky->>Risky: 构建激进风险论点
+    Risky-->>State: 返回激进报告
+    
+    State->>Neutral: 调用中性分析师
+    Neutral->>Neutral: 构建中性风险论点
+    Neutral-->>State: 返回中性报告
+    
+    State->>Safe: 调用保守分析师
+    Safe->>Safe: 构建保守风险论点
+    Safe-->>State: 返回保守报告
+    
+    State->>State: 检查讨论是否继续
+    alt 讨论未达到最大轮次
+        State->>Risky: 继续讨论
+        Risky->>Risky: 反驳其他观点
+        Risky-->>State: 返回反驳报告
+        State->>Neutral: 继续讨论
+        Neutral->>Neutral: 反驳其他观点
+        Neutral-->>State: 返回反驳报告
+        State->>Safe: 继续讨论
+        Safe->>Safe: 反驳其他观点
+        Safe-->>State: 返回反驳报告
+    else 讨论达到最大轮次
+        State->>Judge: 提交讨论结果
+    end
+```
+
+**风险辩论状态管理**:
+```python
+class RiskDebateState(TypedDict):
+    """风险辩论状态"""
+    risky_reports: List[str]     # 激进分析师报告列表
+    neutral_reports: List[str]   # 中性分析师报告列表
+    safe_reports: List[str]      # 保守分析师报告列表
+    discuss_round: int           # 当前讨论轮次
+    max_discuss_rounds: int      # 最大讨论轮次
+    continue_discuss: bool       # 是否继续讨论
+```
 
 **风险经理**: [`create_risk_manager()`](posp/trading/TradingAgents-CN/tradingagents/agents/managers/risk_manager.py:9)
 
@@ -470,7 +746,221 @@ data['rsi6'] = 100 - (100 / (1 + rs6))
 - Prompt 大小统计和 Token 估算
 - 默认决策生成（LLM 调用失败时）
 
-#### 3.4.8 配置管理
+#### 3.4.9 交易员决策机制
+
+**交易员节点**: [`create_trader()`](posp/trading/TradingAgents-CN/tradingagents/agents/trader/trader.py:9)
+
+**核心职责**:
+- 综合所有分析师和研究员的分析结果
+- 基于市场数据、基本面、新闻、情绪等多维度信息做出投资决策
+- 提供具体的买入/卖出/持有建议
+- 必须提供具体的目标价格（强制要求）
+- 使用历史记忆进行学习，改进决策质量
+
+**Prompt 核心要素**:
+```python
+TRADER_PROMPT = """
+你是交易员，负责做出最终的投资决策。
+
+你的任务：
+1. 综合分析：整合市场分析师、基本面分析师、新闻分析师、情绪分析师的报告
+2. 参考辩论：考虑看涨研究员和看跌研究员的辩论结果
+3. 评估风险：参考风险分析师的风险评估
+4. 做出决策：基于所有信息做出买入/卖出/持有决策
+5. 提供目标价：必须提供具体的目标价格（强制要求）
+
+关键要求：
+- 必须基于数据和分析，不能凭空臆测
+- 必须提供具体的投资建议（买入/卖出/持有）
+- 必须提供具体的目标价格（强制要求）
+- 必须提供明确的理由和依据
+- 必须学习历史经验，避免重复错误
+
+输出格式：
+- 投资建议（强烈买入/买入/持有/卖出/强烈卖出）
+- 目标价格（具体数字，强制要求）
+- 止损价格（具体数字）
+- 决策理由（3-5条）
+- 风险提示（2-3条）
+"""
+```
+
+**决策流程**:
+```mermaid
+sequenceDiagram
+    participant State as 状态
+    participant Trader as 交易员
+    participant Memory as ChromaDB记忆
+    participant Risk as 风险经理
+
+    State->>Trader: 调用交易员
+    Trader->>Trader: 接收分析师报告
+    Trader->>Trader: 接收辩论结果
+    Trader->>Trader: 接收风险评估
+    Trader->>Memory: 检索历史决策
+    Memory-->>Trader: 返回相关记忆
+    Trader->>Trader: 综合分析
+    Trader->>Trader: 做出决策
+    Trader->>Trader: 提供目标价格
+    Trader-->>State: 返回决策报告
+    State->>Risk: 提交决策进行风险评估
+```
+
+**交易员状态管理**:
+```python
+class TraderState(TypedDict):
+    """交易员状态"""
+    market_report: str         # 市场分析师报告
+    fundamentals_report: str    # 基本面分析师报告
+    news_report: str            # 新闻分析师报告
+    social_report: str          # 情绪分析师报告
+    bull_reports: List[str]     # 看涨研究员报告列表
+    bear_reports: List[str]     # 看跌研究员报告列表
+    trader_decision: str        # 交易员决策
+    target_price: Optional[float]  # 目标价格
+    stop_loss: Optional[float]    # 止损价格
+    decision_reason: str        # 决策理由
+    risk_assessment: str        # 风险评估
+```
+
+**记忆学习机制**:
+- 使用 ChromaDB 向量数据库存储历史决策
+- 通过语义搜索检索相关历史经验
+- 基于历史成功/失败的决策改进当前决策
+- 记录目标价格准确性，优化价格预测
+
+**强制要求**:
+- 必须提供具体的目标价格（不能是"待定"或"观望"）
+- 目标价格必须基于分析（不能凭空臆测）
+- 必须提供止损价格（风险控制）
+- 必须提供明确的决策理由
+
+#### 3.4.10 股票工具类
+
+**股票工具类**: [`StockUtils`](posp/trading/TradingAgents-CN/tradingagents/utils/stock_utils.py:11)
+
+**核心职责**:
+- 识别股票代码所属的市场类型（A股/港股/美股）
+- 获取市场信息（市场名称、货币名称、货币符号）
+- 获取数据源信息
+- 判断是否为中国市场、港股、美股
+
+**市场类型识别**:
+```python
+class StockMarket(Enum):
+    """股票市场类型"""
+    CHINA_A = "china_a"      # A股
+    HONG_KONG = "hong_kong"  # 港股
+    US = "us"                # 美股
+    UNKNOWN = "unknown"      # 未知
+
+def identify_stock_market(ticker: str) -> StockMarket:
+    """识别股票代码所属的市场类型"""
+    # A股：6位数字
+    if re.match(r'^\d{6}$', ticker):
+        return StockMarket.CHINA_A
+    
+    # 港股：4-5位数字 + .HK 或 4-5位数字
+    if re.match(r'^\d{4,5}\.HK$', ticker.upper()) or re.match(r'^\d{4,5}$', ticker):
+        return StockMarket.HONG_KONG
+    
+    # 美股：1-5位字母
+    if re.match(r'^[A-Z]{1,5}$', ticker.upper()):
+        return StockMarket.US
+    
+    return StockMarket.UNKNOWN
+```
+
+**市场信息获取**:
+```python
+def get_market_info(ticker: str) -> Dict[str, Any]:
+    """获取股票市场信息
+    
+    返回:
+        {
+            'ticker': str,              # 股票代码
+            'market': StockMarket,      # 市场类型
+            'market_name': str,         # 市场名称
+            'currency_name': str,       # 货币名称
+            'currency_symbol': str,     # 货币符号
+            'data_source': str,         # 数据源
+            'is_china': bool,           # 是否为中国市场
+            'is_hk': bool,              # 是否为港股
+            'is_us': bool               # 是否为美股
+        }
+    """
+    market = identify_stock_market(ticker)
+    
+    market_info = {
+        'ticker': ticker,
+        'market': market,
+        'market_name': '',
+        'currency_name': '',
+        'currency_symbol': '',
+        'data_source': '',
+        'is_china': False,
+        'is_hk': False,
+        'is_us': False
+    }
+    
+    if market == StockMarket.CHINA_A:
+        market_info.update({
+            'market_name': 'A股',
+            'currency_name': '人民币',
+            'currency_symbol': 'CNY',
+            'data_source': 'tushare/akshare/baostock',
+            'is_china': True
+        })
+    elif market == StockMarket.HONG_KONG:
+        market_info.update({
+            'market_name': '港股',
+            'currency_name': '港币',
+            'currency_symbol': 'HKD',
+            'data_source': 'akshare',
+            'is_hk': True
+        })
+    elif market == StockMarket.US:
+        market_info.update({
+            'market_name': '美股',
+            'currency_name': '美元',
+            'currency_symbol': 'USD',
+            'data_source': 'yfinance/alphavantage',
+            'is_us': True
+        })
+    
+    return market_info
+```
+
+**使用示例**:
+```python
+# 识别市场类型
+market = StockUtils.identify_stock_market("000001")  # StockMarket.CHINA_A
+market = StockUtils.identify_stock_market("00700.HK")  # StockMarket.HONG_KONG
+market = StockUtils.identify_stock_market("AAPL")  # StockMarket.US
+
+# 获取市场信息
+info = StockUtils.get_market_info("000001")
+# {
+#     'ticker': '000001',
+#     'market': StockMarket.CHINA_A,
+#     'market_name': 'A股',
+#     'currency_name': '人民币',
+#     'currency_symbol': 'CNY',
+#     'data_source': 'tushare/akshare/baostock',
+#     'is_china': True,
+#     'is_hk': False,
+#     'is_us': False
+# }
+```
+
+**应用场景**:
+1. **自动数据源选择**: 根据市场类型自动选择合适的数据源
+2. **货币转换**: 根据市场信息进行货币转换
+3. **API 调用**: 根据市场类型调用不同的 API
+4. **前端展示**: 根据市场信息展示正确的货币符号
+5. **风险控制**: 根据市场类型应用不同的风险控制策略
+
+#### 3.4.11 配置管理
 
 **运行时配置**: [`runtime_settings.py`](posp/trading/TradingAgents-CN/tradingagents/config/runtime_settings.py)
 
@@ -487,7 +977,7 @@ data['rsi6'] = 100 - (100 / (1 + rs6))
 - 避免事件循环冲突（异步环境中的同步调用）
 - 弱依赖设计（不可用时静默回退）
 
-#### 3.4.9 FastAPI 后端
+#### 3.4.12 FastAPI 后端
 
 **主应用**: [`app/main.py`](posp/trading/TradingAgents-CN/app/main.py)
 
