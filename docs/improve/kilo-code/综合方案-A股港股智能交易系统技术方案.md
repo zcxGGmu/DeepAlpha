@@ -38,6 +38,13 @@
 - **技术指标**: MA、MACD、RSI（同花顺风格）、布林带
 - **实时交易**: 支持实时行情监控和自动交易
 - **回测系统**: 完整的回测框架
+- **AI竞争模式**: 参考NOFX的AI竞争模式
+  - 实时排行榜：显示所有AI交易者的表现排名
+  - 性能对比图表：多交易者PnL曲线对比
+  - 头对头统计：交易者直接对比分析
+  - 实时数据更新：15秒自动刷新
+  - 交易者配置查看：点击查看详细配置
+  - Punk头像：为每个交易者生成独特头像
 - **Web界面**: FastAPI后端 + React前端（参考NOFX前端实现）
   - React 18.3.1 + TypeScript 5.8.3 + Vite 6.0.7
   - Zustand 5.0.2 状态管理
@@ -1313,7 +1320,714 @@ export default {
 }
 ```
 
-### 4.3 智能体工作流
+### 4.3 AI竞争模式（参考NOFX实现）
+
+#### 4.3.1 竞争模式概述
+
+AI竞争模式是系统的核心功能之一，允许多个AI交易者同时运行，实时对比它们的交易表现。该模式参考NOFX的CompetitionPage实现，提供直观的排行榜和性能对比界面。
+
+**核心特性**:
+- **实时排行榜**: 按收益率排序显示所有交易者
+- **性能对比图表**: 多交易者PnL曲线实时对比
+- **头对头统计**: 两个交易者直接对比分析
+- **实时数据更新**: 15秒自动刷新竞赛数据
+- **交易者配置查看**: 点击查看详细配置和策略
+- **Punk头像**: 为每个交易者生成独特头像
+
+#### 4.3.2 竞争模式架构
+
+```mermaid
+graph TD
+    A[前端: CompetitionPage] --> B[API: getCompetition]
+    B --> C[后端: CompetitionService]
+    C --> D[数据库: MongoDB]
+    C --> E[交易者引擎池]
+    E --> F[交易者1: AI Trader 1]
+    E --> G[交易者2: AI Trader 2]
+    E --> H[交易者N: AI Trader N]
+    F --> I[智能体分析]
+    G --> I
+    H --> I
+    I --> J[交易执行]
+    J --> K[数据源: Tushare/AKShare]
+    K --> L[实时行情]
+    L --> E
+```
+
+#### 4.3.3 前端组件设计
+
+##### 4.3.3.1 CompetitionPage组件
+
+**组件结构**:
+```typescript
+// frontend/pages/CompetitionPage.tsx
+import { useState } from 'react';
+import { Trophy } from 'lucide-react';
+import useSWR from 'swr';
+import { api } from '../services/api';
+import type { CompetitionData } from '../types';
+import { ComparisonChart } from '../components/charts/ComparisonChart';
+import { TraderConfigViewModal } from '../components/modals/TraderConfigViewModal';
+import { getTraderColor } from '../utils/traderColors';
+import { PunkAvatar, getTraderAvatar } from '../components/common/PunkAvatar';
+
+export function CompetitionPage() {
+  const [selectedTrader, setSelectedTrader] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { data: competition } = useSWR<CompetitionData>(
+    'competition',
+    api.getCompetition,
+    {
+      refreshInterval: 15000, // 15秒刷新
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
+    }
+  );
+
+  const handleTraderClick = async (traderId: string) => {
+    try {
+      const traderConfig = await api.getTraderConfig(traderId);
+      setSelectedTrader(traderConfig);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Failed to fetch trader config:', error);
+    }
+  };
+
+  // 按收益率排序
+  const sortedTraders = [...competition.traders].sort(
+    (a, b) => b.total_pnl_pct - a.total_pnl_pct
+  );
+
+  const leader = sortedTraders[0];
+
+  return (
+    <div className="space-y-5 animate-fade-in">
+      {/* Competition Header */}
+      <CompetitionHeader
+        count={competition.count}
+        leader={leader}
+      />
+      
+      {/* Left/Right Split: Performance Chart + Leaderboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Performance Comparison Chart */}
+        <PerformanceChart traders={sortedTraders.slice(0, 10)} />
+        
+        {/* Leaderboard */}
+        <Leaderboard
+          traders={sortedTraders}
+          onTraderClick={handleTraderClick}
+        />
+      </div>
+      
+      {/* Head-to-Head Stats */}
+      {competition.traders.length === 2 && (
+        <HeadToHeadStats traders={sortedTraders} />
+      )}
+      
+      {/* Trader Config View Modal */}
+      <TraderConfigViewModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        traderData={selectedTrader}
+      />
+    </div>
+  );
+}
+```
+
+##### 4.3.3.2 ComparisonChart组件
+
+**性能对比图表组件**:
+```typescript
+// frontend/components/charts/ComparisonChart.tsx
+import React from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
+import { getTraderColor } from '../../utils/traderColors';
+
+interface ComparisonChartProps {
+  traders: Array<{
+    trader_id: string;
+    trader_name: string;
+    history: Array<{ timestamp: string; pnl: number }>;
+  }>;
+}
+
+export function ComparisonChart({ traders }: ComparisonChartProps) {
+  const chartData = traders.length > 0 ?
+    traders[0].history.map((item, index) => {
+      const dataPoint: any = {
+        timestamp: item.timestamp,
+      };
+      traders.forEach(trader => {
+        dataPoint[trader.trader_id] = trader.history[index]?.pnl || 0;
+      });
+      return dataPoint;
+    }) : [];
+
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <LineChart data={chartData}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
+        <XAxis
+          dataKey="timestamp"
+          stroke="#d1d5db"
+          tick={{ fill: '#d1d5db' }}
+          tickFormatter={(value) => new Date(value).toLocaleTimeString()}
+        />
+        <YAxis
+          stroke="#d1d5db"
+          tick={{ fill: '#d1d5db' }}
+          tickFormatter={(value) => `${(value * 100).toFixed(2)}%`}
+        />
+        <Tooltip
+          contentStyle={{
+            backgroundColor: '#1a1a1a',
+            border: '1px solid #2a2a2a',
+            borderRadius: '8px'
+          }}
+          labelStyle={{ color: '#d1d5db' }}
+          itemStyle={{ color: '#d1d5db' }}
+          formatter={(value: number) => `${(value * 100).toFixed(2)}%`}
+        />
+        <Legend />
+        {traders.map(trader => (
+          <Line
+            key={trader.trader_id}
+            type="monotone"
+            dataKey={trader.trader_id}
+            stroke={getTraderColor(traders, trader.trader_id)}
+            strokeWidth={2}
+            dot={false}
+            name={trader.trader_name}
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+```
+
+##### 4.3.3.3 Leaderboard组件
+
+**排行榜组件**:
+```typescript
+// frontend/components/competition/Leaderboard.tsx
+import React from 'react';
+import { PunkAvatar, getTraderAvatar } from '../common/PunkAvatar';
+import { getTraderColor } from '../../utils/traderColors';
+
+interface LeaderboardProps {
+  traders: Array<{
+    trader_id: string;
+    trader_name: string;
+    ai_model: string;
+    exchange: string;
+    total_equity: number;
+    total_pnl: number;
+    total_pnl_pct: number;
+    position_count: number;
+    margin_used_pct: number;
+    is_running: boolean;
+  }>;
+  onTraderClick: (traderId: string) => void;
+}
+
+export function Leaderboard({ traders, onTraderClick }: LeaderboardProps) {
+  return (
+    <div className="space-y-2">
+      {traders.map((trader, index) => {
+        const isLeader = index === 0;
+        const traderColor = getTraderColor(traders, trader.trader_id);
+
+        return (
+          <div
+            key={trader.trader_id}
+            onClick={() => onTraderClick(trader.trader_id)}
+            className="rounded p-3 transition-all duration-300 hover:translate-y-[-1px] cursor-pointer hover:shadow-lg"
+            style={{
+              background: isLeader
+                ? 'linear-gradient(135deg, rgba(240, 185, 11, 0.08) 0%, #0B0E11 100%)'
+                : '#0B0E11',
+              border: `1px solid ${isLeader ? 'rgba(240, 185, 11, 0.4)' : '#2B3139'}`,
+              boxShadow: isLeader
+                ? '0 3px 15px rgba(240, 185, 11, 0.12), 0 0 0 1px rgba(240, 185, 11, 0.15)'
+                : '0 1px 4px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              {/* Rank & Avatar & Name */}
+              <div className="flex items-center gap-3">
+                {/* Rank Badge */}
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{
+                    background: index === 0
+                      ? 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)'
+                      : index === 1
+                        ? 'linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 100%)'
+                        : index === 2
+                          ? 'linear-gradient(135deg, #CD7F32 0%, #E8A64C 100%)'
+                          : '#2B3139',
+                    color: index < 3 ? '#000' : '#848E9C',
+                  }}
+                >
+                  {index + 1}
+                </div>
+                
+                {/* Punk Avatar */}
+                <PunkAvatar
+                  seed={getTraderAvatar(trader.trader_id, trader.trader_name)}
+                  size={36}
+                  className="rounded-lg"
+                />
+                
+                <div>
+                  <div
+                    className="font-bold text-sm"
+                    style={{ color: '#EAECEF' }}
+                  >
+                    {trader.trader_name}
+                  </div>
+                  <div
+                    className="text-xs mono font-semibold"
+                    style={{ color: traderColor }}
+                  >
+                    {trader.ai_model.toUpperCase()} {trader.exchange.toUpperCase()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="flex items-center gap-2 md:gap-3 flex-wrap md:flex-nowrap">
+                {/* Total Equity */}
+                <div className="text-right">
+                  <div className="text-xs" style={{ color: '#848E9C' }}>
+                    权益
+                  </div>
+                  <div
+                    className="text-xs md:text-sm font-bold mono"
+                    style={{ color: '#EAECEF' }}
+                  >
+                    ¥{trader.total_equity?.toFixed(2) || '0.00'}
+                  </div>
+                </div>
+
+                {/* P&L */}
+                <div className="text-right min-w-[70px] md:min-w-[90px]">
+                  <div className="text-xs" style={{ color: '#848E9C' }}>
+                    收益率
+                  </div>
+                  <div
+                    className="text-base md:text-lg font-bold mono"
+                    style={{
+                      color:
+                        (trader.total_pnl ?? 0) >= 0
+                          ? '#0ECB81'
+                          : '#F6465D',
+                    }}
+                  >
+                    {(trader.total_pnl ?? 0) >= 0 ? '+' : ''}
+                    {trader.total_pnl_pct?.toFixed(2) || '0.00'}%
+                  </div>
+                </div>
+
+                {/* Positions */}
+                <div className="text-right">
+                  <div className="text-xs" style={{ color: '#848E9C' }}>
+                    持仓
+                  </div>
+                  <div
+                    className="text-xs md:text-sm font-bold mono"
+                    style={{ color: '#EAECEF' }}
+                  >
+                    {trader.position_count}
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div>
+                  <div
+                    className="px-2 py-1 rounded text-xs font-bold"
+                    style={
+                      trader.is_running
+                        ? {
+                            background: 'rgba(14, 203, 129, 0.1)',
+                            color: '#0ECB81',
+                          }
+                        : {
+                            background: 'rgba(246, 70, 93, 0.1)',
+                            color: '#F6465D',
+                          }
+                    }
+                  >
+                    {trader.is_running ? '●' : '○'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+```
+
+##### 4.3.3.4 PunkAvatar组件
+
+**Punk头像生成组件**:
+```typescript
+// frontend/components/common/PunkAvatar.tsx
+import React from 'react';
+
+interface PunkAvatarProps {
+  seed: string;
+  size?: number;
+  className?: string;
+}
+
+export function PunkAvatar({ seed, size = 40, className = '' }: PunkAvatarProps) {
+  // 使用DiceBear API生成独特的头像
+  const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${seed}`;
+  return (
+    <img
+      src={avatarUrl}
+      alt="Trader Avatar"
+      width={size}
+      height={size}
+      className={className}
+      style={{ borderRadius: '8px' }}
+    />
+  );
+}
+
+export function getTraderAvatar(traderId: string, traderName: string): string {
+  // 结合交易者ID和名称生成唯一种子
+  return `${traderId}-${traderName}`;
+}
+```
+
+#### 4.3.4 后端API设计
+
+##### 4.3.4.1 Competition API
+
+```python
+# app/api/competition.py
+from fastapi import APIRouter, Depends
+from typing import List
+from datetime import datetime
+from app.services.competition_service import CompetitionService
+from app.core.auth import get_current_user
+
+router = APIRouter(prefix="/api/competition", tags=["competition"])
+
+@router.get("/", response_model=CompetitionData)
+async def get_competition(
+    current_user: User = Depends(get_current_user)
+):
+    """获取竞争数据"""
+    service = CompetitionService()
+    return await service.get_competition_data()
+
+@router.get("/traders/{trader_id}", response_model=TraderConfig)
+async def get_trader_config(
+    trader_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """获取交易者配置"""
+    service = CompetitionService()
+    return await service.get_trader_config(trader_id)
+
+@router.post("/traders/{trader_id}/start")
+async def start_trader(
+    trader_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """启动交易者"""
+    service = CompetitionService()
+    return await service.start_trader(trader_id, current_user.id)
+
+@router.post("/traders/{trader_id}/stop")
+async def stop_trader(
+    trader_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """停止交易者"""
+    service = CompetitionService()
+    return await service.stop_trader(trader_id, current_user.id)
+```
+
+##### 4.3.4.2 CompetitionService
+
+```python
+# app/services/competition_service.py
+from typing import List, Dict, Any
+from datetime import datetime
+from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
+
+class CompetitionService:
+    def __init__(self):
+        self.db: AsyncIOMotorClient = get_database()
+    
+    async def get_competition_data(self) -> Dict[str, Any]:
+        """获取竞争数据"""
+        # 获取所有活跃的交易者
+        traders_cursor = self.db.traders.find({
+            'status': 'active'
+        })
+        traders = await traders_cursor.to_list(length=100)
+        
+        # 计算每个交易者的统计数据
+        trader_stats = []
+        for trader in traders:
+            stats = await self._calculate_trader_stats(trader)
+            trader_stats.append(stats)
+        
+        # 按收益率排序
+        trader_stats.sort(key=lambda x: x['total_pnl_pct'], reverse=True)
+        
+        return {
+            'count': len(trader_stats),
+            'traders': trader_stats,
+            'last_update': datetime.now().isoformat()
+        }
+    
+    async def _calculate_trader_stats(self, trader: Dict) -> Dict[str, Any]:
+        """计算交易者统计数据"""
+        trader_id = trader['_id']
+        
+        # 获取交易记录
+        trades_cursor = self.db.trades.find({
+            'trader_id': trader_id
+        }).sort('timestamp', -1)
+        trades = await trades_cursor.to_list(length=1000)
+        
+        # 计算总权益
+        total_equity = trader.get('initial_capital', 1000000)
+        for trade in trades:
+            if trade['side'] == 'buy':
+                total_equity -= trade['cost']
+            else:
+                total_equity += trade['revenue']
+        
+        # 计算PnL
+        initial_capital = trader.get('initial_capital', 1000000)
+        total_pnl = total_equity - initial_capital
+        total_pnl_pct = (total_pnl / initial_capital) * 100
+        
+        # 获取当前持仓
+        positions_cursor = self.db.positions.find({
+            'trader_id': trader_id,
+            'status': 'open'
+        })
+        positions = await positions_cursor.to_list(length=100)
+        
+        return {
+            'trader_id': str(trader_id),
+            'trader_name': trader.get('name', 'Unknown'),
+            'ai_model': trader.get('ai_model', 'Unknown'),
+            'exchange': trader.get('exchange', 'Unknown'),
+            'total_equity': total_equity,
+            'total_pnl': total_pnl,
+            'total_pnl_pct': total_pnl_pct,
+            'position_count': len(positions),
+            'margin_used_pct': trader.get('margin_used_pct', 0),
+            'is_running': trader.get('status') == 'running',
+            'history': await self._get_trader_history(trader_id)
+        }
+    
+    async def _get_trader_history(self, trader_id: str) -> List[Dict]:
+        """获取交易者历史数据"""
+        # 获取每日权益历史
+        history_cursor = self.db.trader_history.find({
+            'trader_id': trader_id
+        }).sort('date', 1)
+        return await history_cursor.to_list(length=365)
+    
+    async def get_trader_config(self, trader_id: str) -> Dict[str, Any]:
+        """获取交易者配置"""
+        trader = await self.db.traders.find_one({
+            '_id': ObjectId(trader_id)
+        })
+        
+        if not trader:
+            raise HTTPException(status_code=404, detail="Trader not found")
+        
+        return {
+            'trader_id': str(trader['_id']),
+            'name': trader.get('name'),
+            'ai_model': trader.get('ai_model'),
+            'exchange': trader.get('exchange'),
+            'strategy': trader.get('strategy'),
+            'risk_management': trader.get('risk_management'),
+            'initial_capital': trader.get('initial_capital'),
+            'created_at': trader.get('created_at'),
+            'status': trader.get('status')
+        }
+    
+    async def start_trader(self, trader_id: str, user_id: str):
+        """启动交易者"""
+        # 验证权限
+        trader = await self.db.traders.find_one({
+            '_id': ObjectId(trader_id),
+            'user_id': user_id
+        })
+        
+        if not trader:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # 更新状态
+        await self.db.traders.update_one(
+            {'_id': ObjectId(trader_id)},
+            {'$set': {
+                'status': 'running',
+                'started_at': datetime.now()
+            }}
+        )
+        
+        # 启动交易者引擎
+        await self._start_trader_engine(trader_id)
+        
+        return {'status': 'success'}
+    
+    async def stop_trader(self, trader_id: str, user_id: str):
+        """停止交易者"""
+        # 验证权限
+        trader = await self.db.traders.find_one({
+            '_id': ObjectId(trader_id),
+            'user_id': user_id
+        })
+        
+        if not trader:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # 更新状态
+        await self.db.traders.update_one(
+            {'_id': ObjectId(trader_id)},
+            {'$set': {
+                'status': 'stopped',
+                'stopped_at': datetime.now()
+            }}
+        )
+        
+        # 停止交易者引擎
+        await self._stop_trader_engine(trader_id)
+        
+        return {'status': 'success'}
+    
+    async def _start_trader_engine(self, trader_id: str):
+        """启动交易者引擎"""
+        # 这里可以集成到交易引擎，启动对应的交易者
+        pass
+    
+    async def _stop_trader_engine(self, trader_id: str):
+        """停止交易者引擎"""
+        # 这里可以集成到交易引擎，停止对应的交易者
+        pass
+```
+
+#### 4.3.5 数据模型
+
+```python
+# app/models/competition.py
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from datetime import datetime
+
+class TraderStats(BaseModel):
+    trader_id: str
+    trader_name: str
+    ai_model: str
+    exchange: str
+    total_equity: float
+    total_pnl: float
+    total_pnl_pct: float
+    position_count: int
+    margin_used_pct: float
+    is_running: bool
+    history: List[Dict]
+
+class CompetitionData(BaseModel):
+    count: int
+    traders: List[TraderStats]
+    last_update: str
+
+class TraderConfig(BaseModel):
+    trader_id: str
+    name: str
+    ai_model: str
+    exchange: str
+    strategy: Dict
+    risk_management: Dict
+    initial_capital: float
+    created_at: datetime
+    status: str
+```
+
+#### 4.3.6 竞争模式开发路线
+
+##### 4.3.6.1 前端开发（2周）
+
+**任务**:
+1. 实现CompetitionPage组件
+2. 实现ComparisonChart组件
+3. 实现Leaderboard组件
+4. 实现PunkAvatar组件
+5. 实现HeadToHeadStats组件
+6. 实现TraderConfigViewModal组件
+7. 实现实时数据更新（SWR）
+
+**交付物**:
+- frontend/pages/CompetitionPage.tsx
+- frontend/components/charts/ComparisonChart.tsx
+- frontend/components/competition/Leaderboard.tsx
+- frontend/components/common/PunkAvatar.tsx
+- frontend/components/competition/HeadToHeadStats.tsx
+- frontend/components/modals/TraderConfigViewModal.tsx
+
+##### 4.3.6.2 后端开发（2周）
+
+**任务**:
+1. 实现Competition API
+2. 实现CompetitionService
+3. 实现交易者统计数据计算
+4. 实现交易者历史记录
+5. 实现交易者启动/停止功能
+6. 实现WebSocket实时推送
+
+**交付物**:
+- app/api/competition.py
+- app/services/competition_service.py
+- app/models/competition.py
+- WebSocket实时推送模块
+
+##### 4.3.6.3 数据库设计（1周）
+
+**任务**:
+1. 设计traders集合
+2. 设计trades集合
+3. 设计positions集合
+4. 设计trader_history集合
+5. 创建索引
+
+**交付物**:
+- 数据库设计文档
+- 索引创建脚本
+
+### 4.4 智能体工作流
 
 ```mermaid
 graph TD
